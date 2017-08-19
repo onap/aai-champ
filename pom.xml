@@ -1,12 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.onap.oparent</groupId>
+		<artifactId>oparent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
 	<groupId>org.openecomp.aai</groupId>
 	<artifactId>champ</artifactId>
 	<version>1.1.0-SNAPSHOT</version>
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<tinkerpop.version>3.0.1-incubating</tinkerpop.version>
-        	<nexusproxy>https://nexus.onap.org/</nexusproxy>
 		<sitePath>/content/sites/site/org/onap/aai/${project.artifactId}/${project.version}</sitePath>
 		<sonar.language>java</sonar.language>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
@@ -16,19 +20,9 @@
 		<sonar.projectVersion>${project.version}</sonar.projectVersion>
 	</properties>
 	<distributionManagement>
-		<repository>
-			<id>ecomp-releases</id>
-			<name>ECOMP Release Repository</name>
-			<url>${nexusproxy}/content/repositories/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>ecomp-snapshots</id>
-			<name>ECOMP Snapshot Repository</name>
-			<url>${nexusproxy}/content/repositories/snapshots/</url>
-		</snapshotRepository>
 		<site>
 			<id>ecomp-site</id>
-			<url>dav:${nexusproxy}${sitePath}</url>
+			<url>dav:${onap.nexus.url}${sitePath}</url>
 		</site>
 	</distributionManagement>
 	<dependencies>
@@ -308,7 +302,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.12.2</version>
 				<configuration>
 					<systemPropertyVariables>
 						<jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
@@ -318,6 +311,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.2</version>
 				<executions>
 					<execution>
 						<id>default-deploy</id>
@@ -331,7 +325,7 @@
 				<version>1.6.7</version>
 				<extensions>true</extensions>
 				<configuration>
-					<nexusUrl>${nexusproxy}</nexusUrl>
+					<nexusUrl>${onap.nexus.url}</nexusUrl>
 					<stagingProfileId>176c31dfe190a</stagingProfileId>
 					<serverId>ecomp-staging</serverId>
 				</configuration>
