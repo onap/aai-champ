@@ -21,19 +21,19 @@
  */
 package org.openecomp.aai.champ.graph.impl;
 
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
+import com.thinkaurelius.titan.core.Cardinality;
+import com.thinkaurelius.titan.core.EdgeLabel;
+import com.thinkaurelius.titan.core.PropertyKey;
+import com.thinkaurelius.titan.core.SchemaViolationException;
+import com.thinkaurelius.titan.core.TitanEdge;
+import com.thinkaurelius.titan.core.TitanFactory;
+import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.schema.SchemaAction;
+import com.thinkaurelius.titan.core.schema.SchemaStatus;
+import com.thinkaurelius.titan.core.schema.TitanGraphIndex;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
+import com.thinkaurelius.titan.graphdb.database.management.ManagementSystem;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.openecomp.aai.champ.ChampCapabilities;
@@ -53,19 +53,18 @@ import org.openecomp.aai.champ.schema.DefaultChampSchemaEnforcer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thinkaurelius.titan.core.Cardinality;
-import com.thinkaurelius.titan.core.EdgeLabel;
-import com.thinkaurelius.titan.core.PropertyKey;
-import com.thinkaurelius.titan.core.SchemaViolationException;
-import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanFactory;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanVertex;
-import com.thinkaurelius.titan.core.schema.SchemaAction;
-import com.thinkaurelius.titan.core.schema.SchemaStatus;
-import com.thinkaurelius.titan.core.schema.TitanGraphIndex;
-import com.thinkaurelius.titan.core.schema.TitanManagement;
-import com.thinkaurelius.titan.graphdb.database.management.ManagementSystem;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
 
@@ -100,16 +99,14 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
 
 		final Object storageBackend = builder.graphConfiguration.get("storage.backend");
 
-		if (storageBackend.equals("cassandra") ||
-			storageBackend.equals("cassandrathrift") ||
-			storageBackend.equals("astyanax") ||
-			storageBackend.equals("embeddedcassandra")) {
+		if ("cassandra".equals(storageBackend) || "cassandrathrift".equals(storageBackend)
+				|| "astyanax".equals(storageBackend) || "embeddedcassandra".equals(storageBackend)) {
 			titanGraphBuilder.set(TITAN_CASSANDRA_KEYSPACE, builder.graphName);
-		} else if (storageBackend.equals("hbase")) {
+		} else if ("hbase".equals(storageBackend)) {
 			titanGraphBuilder.set(TITAN_HBASE_TABLE, builder.graphName);
-		} else if (storageBackend.equals("berkleyje")) {
+		} else if ("berkleyje".equals(storageBackend)) {
 			throw new RuntimeException("storage.backend=berkleyje cannot handle multiple graphs on a single DB, not usable");
-		} else if (storageBackend.equals("inmemory")) {
+		} else if ("inmemory".equals(storageBackend)) {
 		} else {
 			throw new RuntimeException("Unknown storage.backend=" + storageBackend);
 		}
