@@ -162,8 +162,9 @@ public final class ChampObject implements ChampElement {
 
 		private ReservedPropertyKeys(final String text) {
 			this.text = text;
-		} 
-		
+		}
+
+		@Override
 		public String toString() {
 			return text;
 		}
@@ -184,8 +185,9 @@ public final class ChampObject implements ChampElement {
 
 		private IgnoreOnReadPropertyKeys(final String text) {
 			this.text = text;
-		} 
-		
+		}
+
+		@Override
 		public String toString() {
 			return text;
 		}
@@ -208,6 +210,7 @@ public final class ChampObject implements ChampElement {
 			this.text = text;
 		}
 
+		@Override
 		public String toString() {
 			return text;
 		}
