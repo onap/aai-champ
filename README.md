@@ -383,7 +383,7 @@ There is a jar-with-dependencies provided in maven that contains a performance t
 
 ```
 
-java -cp champ-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.openecomp.aai.champ.perf.ChampAPIPerformanceTest --champ.graph.type=IN_MEMORY
+java -cp champ-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.onap.aai.champ.perf.ChampAPIPerformanceTest --champ.graph.type=IN_MEMORY
 
 
 ```
@@ -394,7 +394,7 @@ Note that after the --champ.graph.type=TITAN parameter is provided, you may prov
 
 ```
 
-java -cp champ-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.openecomp.aai.champ.perf.ChampAPIPerformanceTest --champ.graph.type=TITAN --storage.backend=cassandrathrift --storage.hostname=localhost
+java -cp champ-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.onap.aai.champ.perf.ChampAPIPerformanceTest --champ.graph.type=TITAN --storage.backend=cassandrathrift --storage.hostname=localhost
 
 
 ```
