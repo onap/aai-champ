@@ -70,7 +70,6 @@ public interface ChampGraph {
 											.build();
 			/*
 			case DSE: //See above, DSE still in beta
-				return new DseChampGraphImpl.Builder("localhost").build();
 			*/
 			default:
 				throw new RuntimeException("Unknown type of ChampAPI implementation");
