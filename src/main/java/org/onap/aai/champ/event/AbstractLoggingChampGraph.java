@@ -82,6 +82,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   public abstract Stream<ChampObjectIndex>         retrieveObjectIndices();
   public abstract void                             executeDeleteObjectIndex(String indexName) throws ChampIndexNotExistsException;
   public abstract void                             executeStoreRelationshipIndex(ChampRelationshipIndex index);
+  @Override
   public abstract Optional<ChampRelationshipIndex> retrieveRelationshipIndex(String indexName);
   public abstract Stream<ChampRelationshipIndex>   retrieveRelationshipIndices();
   public abstract void                             executeDeleteRelationshipIndex(String indexName) throws ChampIndexNotExistsException;
