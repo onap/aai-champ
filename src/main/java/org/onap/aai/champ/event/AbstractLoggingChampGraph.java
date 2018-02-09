@@ -74,6 +74,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   public abstract Optional<ChampRelationship>      retrieveRelationship(Object key) throws ChampUnmarshallingException;
   public abstract void                             executeDeleteRelationship(ChampRelationship relationship) throws ChampRelationshipNotExistsException;
   public abstract Stream<ChampRelationship>        retrieveRelationships(ChampObject object) throws ChampUnmarshallingException, ChampObjectNotExistsException;
+  @Override
   public abstract Stream<ChampRelationship>        queryRelationships(Map<String, Object> queryParams);
   public abstract ChampPartition                   executeStorePartition(ChampPartition partition) throws ChampSchemaViolationException, ChampRelationshipNotExistsException, ChampMarshallingException, ChampObjectNotExistsException;
   public abstract void                             executeDeletePartition(ChampPartition graph);
