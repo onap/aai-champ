@@ -79,6 +79,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   public abstract void                             executeDeletePartition(ChampPartition graph);
   public abstract void                             executeStoreObjectIndex(ChampObjectIndex index);
   public abstract Optional<ChampObjectIndex>       retrieveObjectIndex(String indexName);
+  @Override
   public abstract Stream<ChampObjectIndex>         retrieveObjectIndices();
   public abstract void                             executeDeleteObjectIndex(String indexName) throws ChampIndexNotExistsException;
   public abstract void                             executeStoreRelationshipIndex(ChampRelationshipIndex index);
