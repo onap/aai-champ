@@ -59,7 +59,10 @@ public interface ChampGraph {
 	 * If finer control is needed, you should consider accessing an implementation's
 	 * constructors/builders.
 	 */
-	public static class Factory {
+	public static final class Factory {
+		private Factory(){
+			//not called
+		}
 		public static ChampGraph newInstance(ChampGraph.Type type, String graphName) {
 			switch (type) {
 			case IN_MEMORY:
