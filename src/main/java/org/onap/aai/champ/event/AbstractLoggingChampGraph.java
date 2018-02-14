@@ -95,7 +95,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
    
   /** Configuration property for setting the comma-separated list of servers to use for
    *  communicating with the event bus. */
-  public final static String  PARAM_EVENT_STREAM_HOSTS      = "champ.event.stream.hosts";
+  public static final String  PARAM_EVENT_STREAM_HOSTS      = "champ.event.stream.hosts";
   
   /** Configuration property for setting the number of events that we will try to 'batch' 
    *  up before sending them to the event bus. */
