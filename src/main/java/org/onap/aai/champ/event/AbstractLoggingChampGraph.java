@@ -117,7 +117,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   public static final Integer DEFAULT_EVENT_STREAM_PUBLISHER_POOL_SIZE = 100;
   
   /** The event stream topic that we will publish Champ events to. */
-  public final static String EVENT_TOPIC = "champRawEvents";
+  public static final String EVENT_TOPIC = "champRawEvents";
     
   /** Number of events to 'batch up' before actually publishing them to the event bus. */
   private Integer eventStreamBatchSize;
