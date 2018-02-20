@@ -105,7 +105,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   
   /** Configuration property for setting the maximum amount of time to wait for a batch of
    *  outgoing messages to fill up before sending the batch. */
-  public final static String  PARAM_EVENT_STREAM_BATCH_TIMEOUT = "champ.event.stream.batch-timeout";
+  public static final String  PARAM_EVENT_STREAM_BATCH_TIMEOUT = "champ.event.stream.batch-timeout";
   public final static Integer DEFAULT_EVENT_STREAM_BATCH_TIMEOUT_MS = 500; 
   
   public final static String  PARAM_EVENT_STREAM_PUBLISHER_POOL_SIZE = "champ.event.stream.publisher-pool-size";
