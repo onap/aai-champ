@@ -81,6 +81,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   public abstract ChampPartition                   executeStorePartition(ChampPartition partition) throws ChampSchemaViolationException, ChampRelationshipNotExistsException, ChampMarshallingException, ChampObjectNotExistsException;
   public abstract void                             executeDeletePartition(ChampPartition graph);
   public abstract void                             executeStoreObjectIndex(ChampObjectIndex index);
+  @Override
   public abstract Optional<ChampObjectIndex>       retrieveObjectIndex(String indexName);
   public abstract Stream<ChampObjectIndex>         retrieveObjectIndices();
   public abstract void                             executeDeleteObjectIndex(String indexName) throws ChampIndexNotExistsException;
