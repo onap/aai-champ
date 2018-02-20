@@ -109,7 +109,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   public final static Integer DEFAULT_EVENT_STREAM_BATCH_TIMEOUT_MS = 500; 
   
   public final static String  PARAM_EVENT_STREAM_PUBLISHER_POOL_SIZE = "champ.event.stream.publisher-pool-size";
-  public final static Integer DEFAULT_EVENT_STREAM_PUBLISHER_POOL_SIZE = 100;
+  public static final Integer DEFAULT_EVENT_STREAM_PUBLISHER_POOL_SIZE = 100;
   
   /** The event stream topic that we will publish Champ events to. */
   public final static String EVENT_TOPIC = "champRawEvents";
