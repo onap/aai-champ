@@ -106,7 +106,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   /** Configuration property for setting the number of events that we will try to 'batch' 
    *  up before sending them to the event bus. */
   public static final String  PARAM_EVENT_STREAM_BATCH_SIZE = "champ.event.stream.batch-size";
-  public final static Integer DEFAULT_EVENT_STREAM_BATCH_SIZE = 1;
+  public static final Integer DEFAULT_EVENT_STREAM_BATCH_SIZE = 1;
   
   /** Configuration property for setting the maximum amount of time to wait for a batch of
    *  outgoing messages to fill up before sending the batch. */
