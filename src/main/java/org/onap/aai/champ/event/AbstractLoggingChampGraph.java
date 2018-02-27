@@ -439,7 +439,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
       publisherPool.execute(new EventPublisher(anEvent));
     
     } catch (RejectedExecutionException re) {
-      logger.error("Event could not be published to the event bus due to: " + re.getMessage());
+      logger.error("Event could not be published to the event bus due to: " + re.getMessage(),re);
       
     } catch (NullPointerException npe) {
       logger.error("Can not publish null event to event bus.");
