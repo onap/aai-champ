@@ -270,7 +270,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
       objectToDelete = retrieveObject(key);
       
     } catch (ChampUnmarshallingException e) {
-      logger.error("Unable to generate delete object log: " + e.getMessage());
+      logger.error("Unable to generate delete object log: " + e.getMessage(),e);
     }
     
     executeDeleteObject(key);
