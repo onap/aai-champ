@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.att.ajsc</groupId>
+        <artifactId>ajsc-archetype-parent</artifactId>
+        <version>2.0.0</version>
+    </parent>
+
+    <groupId>org.onap.aai</groupId>
+    <artifactId>champ-service</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
+
+    <properties>
+        <runAjscHome>${basedir}/target/swm/package/nix/dist_files${distFilesRoot}</runAjscHome>
+        <ajscRuntimeVersion>2.0.0</ajscRuntimeVersion>
+
+        <absoluteDistFilesRoot>/appl/${project.artifactId}</absoluteDistFilesRoot>
+
+        <!-- For NO Versioning, REMOVE the /${project.version} from the <distFilesRoot>
+            property, below. PLEASE, NOTE: If your ${project.version} is a "-SNAPSHOT"
+            version, THIS will be used as your directory structure. If you do NOT want
+            this, simply remove the "-SNAPSHOT" from your <version> declaration at the
+            top of pom.xml -->
+        <distFilesRoot>/appl/${project.artifactId}/${project.version}</distFilesRoot>
+
+        <event.client.version>1.2.0</event.client.version>
+        <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
+        <common.logging.version>1.2.0</common.logging.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <version>1.18.6</version>
+        </dependency>
+
+        <!-- AJSC Dependencies -->
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.6.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.att.aft</groupId>
+            <artifactId>dme2</artifactId>
+            <version>3.1.200</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--Adding this dependency explicit.-->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20160212</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>2.23</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.6.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${common.logging.groupid}</groupId>
+            <artifactId>common-logging</artifactId>
+            <version>${common.logging.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>eclipselink</artifactId>
+            <version>2.6.2</version>
+        </dependency>
+
+        <!-- Event Bus Library. -->
+        <dependency>
+            <groupId>org.onap.aai.event-client</groupId>
+            <artifactId>event-client-api</artifactId>
+            <version>${event.client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onap.aai.event-client</groupId>
+            <artifactId>event-client-dmaap</artifactId>
+            <version>${event.client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onap.aai.event-client</groupId>
+            <artifactId>event-client-kafka</artifactId>
+            <version>${event.client.version}</version>
+        </dependency>
+
+        <!-- Champ graph database library. -->
+        <dependency>
+            <groupId>org.onap.aai</groupId>
+            <artifactId>champ-core</artifactId>
+            <version>1.2.0-SNAPSHOT</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hbase</groupId>
+                    <artifactId>hbase-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.onap.aai.event-client</groupId>
+                    <artifactId>event-client-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.onap.aai.event-client</groupId>
+                    <artifactId>event-client-dmaap</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.onap.aai.event-client</groupId>
+                    <artifactId>event-client-kafka</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <execution>
+                        <id>copy-docker-file</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/docker</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/src/main/bin/</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.9</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <!--  implementation is needed only for Maven 2  -->
+                                <rule implementation="org.jacoco.maven.RuleConfiguration">
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <!--  implementation is needed only for Maven 2  -->
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>.15</minimum>
+                                        </limit>
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>.12</minimum>
+                                        </limit>
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>COMPLEXITY</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>.15</minimum>
+                                        </limit>
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>.10</minimum>
+                                        </limit>
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>METHOD</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>.17</minimum>
+                                        </limit>
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>CLASS</counter>
+                                            <value>MISSEDCOUNT</value>
+                                            <maximum>5</maximum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>runAjsc</id>
+            <build>
+                <defaultGoal>initialize</defaultGoal>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.3.2</version>
+                        <executions>
+                            <execution>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <includeProjectDependencies>false</includeProjectDependencies>
+                                    <includePluginDependencies>true</includePluginDependencies>
+                                    <executable>java</executable>
+                                    <mainClass>com.att.ajsc.runner.Runner</mainClass>
+                                    <executableDependency>
+                                        <groupId>com.att.ajsc</groupId>
+                                        <artifactId>ajsc-runner</artifactId>
+                                    </executableDependency>
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${basedir}/ajsc-shared-config/etc</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <environmentVariables>
+                                        <AJSC_HOME>${runAjscHome}</AJSC_HOME>
+                                    </environmentVariables>
+
+                                    <!-- Main AJSC System Properties below (necessary for proper startup) -->
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>AJSC_HOME</key>
+                                            <value>${runAjscHome}</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>CONFIG_HOME</key>
+                                            <value>${basedir}/appconfig-local/</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>AJSC_CONF_HOME</key>
+                                            <value>${basedir}/bundleconfig-local</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>logback.configurationFile</key>
+                                            <value>${basedir}/ajsc-shared-config/etc/logback.xml</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>AJSC_SHARED_CONFIG</key>
+                                            <value>${basedir}/ajsc-shared-config</value>
+                                        </systemProperty>
+
+                                        <sysproperty>
+                                            <key>AJSC_EXTERNAL_LIB_FOLDERS</key>
+                                            <value>${basedir}/target/commonLibs</value>
+                                        </sysproperty>
+                                        <sysproperty>
+                                            <key>AJSC_EXTERNAL_PROPERTIES_FOLDERS</key>
+                                            <value>${basedir}/ajsc-shared-config/etc</value>
+                                        </sysproperty>
+
+                                        <systemProperty>
+                                            <key>AJSC_SERVICE_NAMESPACE</key>
+                                            <value>${module.ajsc.namespace.name}</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>AJSC_SERVICE_VERSION</key>
+                                            <value>${module.ajsc.namespace.version}</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>SOACLOUD_SERVICE_VERSION</key>
+                                            <value>${project.version}</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>server.port</key>
+                                            <value>${serverPort}</value>
+                                        </systemProperty>
+                                    </systemProperties>
+
+                                    <!-- Command Line Arguments to add to the java command. Here, you
+                                        can specify the port as well as the Context you want your service to run
+                                        in. Use context=/ to run in an unnamed Context (Root Context). The default
+                                        configuration of the AJSC is to run under the / Context. Setting the port
+                                        here can aid during the development phase of your service. However, you can
+                                        leave this argument out entirely, and the AJSC will default to using an Ephemeral
+                                        port. -->
+                                    <arguments>
+                                        <argument>context=/</argument>
+                                        <argument>port=${serverPort}</argument>
+                                        <argument>sslport=${sslport}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <executable>java</executable>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.att.ajsc</groupId>
+                                <artifactId>ajsc-runner</artifactId>
+                                <version>${ajscRuntimeVersion}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

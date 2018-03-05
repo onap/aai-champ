@@ -1,0 +1,5 @@
+<route xmlns="http://camel.apache.org/schema/spring" trace="true">
+  <from uri="att-dme2-servlet:///echo-service/?matchOnUriPrefix=true" />
+  <to uri="cxfbean:echoServices" />
+</route>
+
