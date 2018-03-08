@@ -27,26 +27,6 @@
         <!--<distFilesRoot>/appl/${project.artifactId}/${project.version}</distFilesRoot>-->
     </properties>
 
-    <scm>
-        <connection>scm:git:ssh://git@codecloud.web.att.com:7999/st_aai/champ.git</connection>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <!-- Repository to publish RELEASE artifacts to. -->
-        <repository>
-            <id>nexus</id>
-            <name>ecomp_aai-releases</name>
-            <url>http://mavencentral.it.att.com:8084/nexus/content/repositories/ecomp_aai-releases</url>
-        </repository>
-        <!-- Repository to publish SNAPSHOT artifacts to. -->
-        <snapshotRepository>
-            <id>nexus</id>
-            <name>ecomp_aai-snapshots</name>
-            <url>http://mavencentral.it.att.com:8084/nexus/content/repositories/ecomp_aai-snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <dependencyManagement>
         <dependencies>
         <dependency>
