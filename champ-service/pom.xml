@@ -30,6 +30,7 @@
         <event.client.version>1.2.0</event.client.version>
         <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
         <common.logging.version>1.2.0</common.logging.version>
+        <org.apache.httpcomponents.httpclient.version>4.5.2</org.apache.httpcomponents.httpclient.version>
     </properties>
 
     <dependencies>
@@ -94,6 +95,12 @@
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
             <version>2.6.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${org.apache.httpcomponents.httpclient.version}</version>
         </dependency>
 
         <!-- Event Bus Library. -->
