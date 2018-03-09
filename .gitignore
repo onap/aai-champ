@@ -1,7 +1,15 @@
+# Application
+/champ-lib/champ-janus/logs/
+
+# IDE - Eclipse
 .classpath
 .project
 .settings/
-target/
-jacoco.exec
+
+# IDE - IntelliJ
 /.idea
 *.iml
+
+# Maven
+target/
+jacoco.exec
