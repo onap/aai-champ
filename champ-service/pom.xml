@@ -27,7 +27,6 @@
             top of pom.xml -->
         <distFilesRoot>/appl/${project.artifactId}/${project.version}</distFilesRoot>
 
-        <event.client.version>1.2.0</event.client.version>
         <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
         <common.logging.version>1.2.0</common.logging.version>
         <org.apache.httpcomponents.httpclient.version>4.5.2</org.apache.httpcomponents.httpclient.version>
@@ -103,23 +102,6 @@
             <version>${org.apache.httpcomponents.httpclient.version}</version>
         </dependency>
 
-        <!-- Event Bus Library. -->
-        <dependency>
-            <groupId>org.onap.aai.event-client</groupId>
-            <artifactId>event-client-api</artifactId>
-            <version>${event.client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onap.aai.event-client</groupId>
-            <artifactId>event-client-dmaap</artifactId>
-            <version>${event.client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onap.aai.event-client</groupId>
-            <artifactId>event-client-kafka</artifactId>
-            <version>${event.client.version}</version>
-        </dependency>
-
         <!-- Champ graph database library. -->
         <dependency>
             <groupId>org.onap.aai</groupId>
@@ -130,18 +112,6 @@
                 <exclusion>
                     <groupId>org.apache.hbase</groupId>
                     <artifactId>hbase-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.onap.aai.event-client</groupId>
-                    <artifactId>event-client-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.onap.aai.event-client</groupId>
-                    <artifactId>event-client-dmaap</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.onap.aai.event-client</groupId>
-                    <artifactId>event-client-kafka</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
