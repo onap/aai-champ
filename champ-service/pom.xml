@@ -49,6 +49,9 @@ limitations under the License.
         <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
         <common.logging.version>1.2.0</common.logging.version>
         <org.apache.httpcomponents.httpclient.version>4.5.2</org.apache.httpcomponents.httpclient.version>
+
+        <docker.location>${basedir}/target</docker.location>
+        <onap.nexus.url>https://nexus.onap.org</onap.nexus.url>
     </properties>
 
     <dependencies>
@@ -136,6 +139,19 @@ limitations under the License.
         </dependency>
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>ecomp-releases</id>
+            <name>ECOMP Release Repository</name>
+            <url>${onap.nexus.url}/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ecomp-snapshots</id>
+            <name>ECOMP Snapshot Repository</name>
+            <url>${onap.nexus.url}/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
@@ -163,6 +179,12 @@ limitations under the License.
                                 </resource>
                                 <resource>
                                     <directory>${basedir}/src/main/bin/</directory>
+                                </resource>
+                                <resource>
+                                    <directory>../champ-service-deps-janus/target/</directory>
+                                </resource>
+                                <resource>
+                                    <directory>../champ-service-deps-titan/target/</directory>
                                 </resource>
                             </resources>
                         </configuration>
