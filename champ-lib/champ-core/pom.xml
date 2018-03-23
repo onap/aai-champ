@@ -50,7 +50,7 @@ limitations under the License.
             <version>${event.client.version}</version>
         </dependency>
         <!-- Event Bus Library - END -->
-        
+
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
@@ -104,7 +104,14 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
-			<!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <!--
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -135,7 +142,7 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
-			-->
+            -->
         </plugins>
     </build>
 </project>

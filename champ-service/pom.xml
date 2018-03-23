@@ -197,7 +197,7 @@ limitations under the License.
                     <skip>true</skip>
                 </configuration>
             </plugin>
-			<!--
+            <!--
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -217,7 +217,7 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
-			-->
+            -->
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
