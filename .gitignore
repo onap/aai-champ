@@ -1,5 +1,6 @@
 # Application
 /champ-lib/champ-janus/logs/
+/champ-service/logs/
 
 # IDE - Eclipse
 .classpath

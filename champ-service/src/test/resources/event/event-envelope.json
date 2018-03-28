@@ -1,0 +1,19 @@
+{
+  "header": {
+    "request-id": "2253f351-d9b6-4638-9fe3-2c194bee1b29",
+    "timestamp": "20180316T092301Z",
+    "source-name": "CHAMP",
+    "event-type": "db-update-result"
+  },
+  "body": {
+    "operation": "CREATE",
+    "transaction-id": "2253f351-d9b6-4638-9fe3-2c194bee1b29",
+    "timestamp": 1521198075620,
+    "vertex": {
+      "key": "",
+      "schema-version": "v13",
+      "type": "pserver",
+      "properties": {}
+    }
+  }
+}
