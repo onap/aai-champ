@@ -41,7 +41,7 @@ limitations under the License.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <event.client.version>1.2.0</event.client.version>
+        <event.client.version>1.2.1</event.client.version>
 
         <!--<absoluteDistFilesRoot>/appl/${project.artifactId}</absoluteDistFilesRoot>-->
 

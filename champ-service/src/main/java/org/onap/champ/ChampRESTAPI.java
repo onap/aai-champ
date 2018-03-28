@@ -204,6 +204,8 @@ public class ChampRESTAPI {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
     } catch (ChampServiceException ce) {
       response = Response.status(ce.getHttpStatus()).entity(ce.getMessage()).build();
+    } catch (IllegalArgumentException e) {
+      response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (Exception e) {
       response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
       LoggingUtil.logInternalError(logger, e);
@@ -242,6 +244,8 @@ public class ChampRESTAPI {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
     } catch (ChampServiceException ce) {
       response = Response.status(ce.getHttpStatus()).entity(ce.getMessage()).build();
+    } catch (IllegalArgumentException e) {
+      response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (Exception e) {
       response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
       LoggingUtil.logInternalError(logger, e);
@@ -386,6 +390,8 @@ public class ChampRESTAPI {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
     } catch (ChampServiceException ce) {
       response = Response.status(ce.getHttpStatus()).entity(ce.getMessage()).build();
+    } catch (IllegalArgumentException e) {
+      response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (Exception e) {
       response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
       LoggingUtil.logInternalError(logger, e);
@@ -422,6 +428,8 @@ public class ChampRESTAPI {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
     } catch (ChampServiceException ce) {
       response = Response.status(ce.getHttpStatus()).entity(ce.getMessage()).build();
+    } catch (IllegalArgumentException e) {
+      response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (Exception e) {
       response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
       LoggingUtil.logInternalError(logger, e);

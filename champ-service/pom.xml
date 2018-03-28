@@ -48,7 +48,7 @@ limitations under the License.
         <distFilesRoot>/appl/${project.artifactId}/${project.version}</distFilesRoot>
 
         <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
-        <common.logging.version>1.2.0</common.logging.version>
+        <common.logging.version>1.2.2</common.logging.version>
         <org.apache.httpcomponents.httpclient.version>4.5.2</org.apache.httpcomponents.httpclient.version>
 
         <docker.location>${basedir}/target</docker.location>
