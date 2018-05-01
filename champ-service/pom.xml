@@ -24,9 +24,9 @@ limitations under the License.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.att.ajsc</groupId>
-        <artifactId>ajsc-archetype-parent</artifactId>
-        <version>2.0.0</version>
+        <groupId>org.onap.oparent</groupId>
+        <artifactId>oparent</artifactId>
+        <version>1.1.0</version>
     </parent>
 
     <groupId>org.onap.aai</groupId>
@@ -35,32 +35,49 @@ limitations under the License.
     <name>champ</name>
 
     <properties>
-        <runAjscHome>${basedir}/target/swm/package/nix/dist_files${distFilesRoot}</runAjscHome>
-        <ajscRuntimeVersion>2.0.0</ajscRuntimeVersion>
-
-        <absoluteDistFilesRoot>/appl/${project.artifactId}</absoluteDistFilesRoot>
-
-        <!-- For NO Versioning, REMOVE the /${project.version} from the <distFilesRoot>
-            property, below. PLEASE, NOTE: If your ${project.version} is a "-SNAPSHOT"
-            version, THIS will be used as your directory structure. If you do NOT want
-            this, simply remove the "-SNAPSHOT" from your <version> declaration at the
-            top of pom.xml -->
-        <distFilesRoot>/appl/${project.artifactId}/${project.version}</distFilesRoot>
-
-        <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
-        <common.logging.version>1.2.2</common.logging.version>
-        <org.apache.httpcomponents.httpclient.version>4.5.2</org.apache.httpcomponents.httpclient.version>
-
         <docker.location>${basedir}/target</docker.location>
         <onap.nexus.url>https://nexus.onap.org</onap.nexus.url>
+        <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
+        <common.logging.version>1.2.2</common.logging.version>
+
+        <version.com.google.guava>18.0</version.com.google.guava>
+        <version.org.apache.commons.commons-lang3>3.7</version.org.apache.commons.commons-lang3>
         <version.org.hamcrest.hamcrest-library>1.3</version.org.hamcrest.hamcrest-library>
+        <version.org.springframework.boot.spring-boot-dependencies>1.5.12.RELEASE</version.org.springframework.boot.spring-boot-dependencies>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${version.org.springframework.boot.spring-boot-dependencies}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-core</artifactId>
-            <version>1.18.6</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jersey</artifactId>
         </dependency>
 
         <dependency>
@@ -70,23 +87,11 @@ limitations under the License.
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.att.aft</groupId>
-            <artifactId>dme2</artifactId>
-            <version>3.1.200</version>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20160212</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>2.23</version>
         </dependency>
 
         <dependency>
@@ -101,16 +106,30 @@ limitations under the License.
             <version>2.6.2</version>
         </dependency>
 
+         <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+          <version>${version.com.google.guava}</version>
+        </dependency>
+
         <dependency>
             <groupId>${common.logging.groupid}</groupId>
             <artifactId>common-logging</artifactId>
             <version>${common.logging.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.1.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -120,9 +139,27 @@ limitations under the License.
         </dependency>
 
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.7</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>${org.apache.httpcomponents.httpclient.version}</version>
+            <version>4.5.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient-cache</artifactId>
+            <version>4.5.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -135,13 +172,28 @@ limitations under the License.
                     <groupId>org.apache.hbase</groupId>
                     <artifactId>hbase-client</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>apache-log4j-extras</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
-            <version>${version.org.hamcrest.hamcrest-library}</version>
             <scope>test</scope>
         </dependency>
 
@@ -169,6 +221,21 @@ limitations under the License.
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <layout>ZIP</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -200,11 +267,18 @@ limitations under the License.
                                 <resource>
                                     <directory>../champ-service-deps-titan/target/</directory>
                                 </resource>
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <includes>
+                                        <include>**/dynamic/**/*</include>
+                                    </includes>
+                                </resource>
                             </resources>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -212,7 +286,7 @@ limitations under the License.
                     <skip>true</skip>
                 </configuration>
             </plugin>
-            <!-- Uncomment to add a license header to source files
+
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -221,18 +295,22 @@ limitations under the License.
                     <header>License.txt</header>
                     <includes>
                         <include>src/main/java/**</include>
+                        <include>src/test/java/**</include>
+                        <include>pom.xml</include>
                     </includes>
+                    <skipExistingHeaders>true</skipExistingHeaders>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>format</goal>
+                            <!-- Set goal to "format" to auto update license headers -->
+                            <goal>check</goal>
                         </goals>
                         <phase>process-sources</phase>
                     </execution>
                 </executions>
             </plugin>
-            -->
+
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
@@ -248,6 +326,7 @@ limitations under the License.
                     <forceTags>true</forceTags>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -270,118 +349,4 @@ limitations under the License.
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>runAjsc</id>
-            <build>
-                <defaultGoal>initialize</defaultGoal>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.3.2</version>
-                        <executions>
-                            <execution>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <configuration>
-                                    <includeProjectDependencies>false</includeProjectDependencies>
-                                    <includePluginDependencies>true</includePluginDependencies>
-                                    <executable>java</executable>
-                                    <mainClass>com.att.ajsc.runner.Runner</mainClass>
-                                    <executableDependency>
-                                        <groupId>com.att.ajsc</groupId>
-                                        <artifactId>ajsc-runner</artifactId>
-                                    </executableDependency>
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${basedir}/ajsc-shared-config/etc</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <environmentVariables>
-                                        <AJSC_HOME>${runAjscHome}</AJSC_HOME>
-                                    </environmentVariables>
-
-                                    <!-- Main AJSC System Properties below (necessary for proper startup) -->
-                                    <systemProperties>
-                                        <systemProperty>
-                                            <key>AJSC_HOME</key>
-                                            <value>${runAjscHome}</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                            <key>CONFIG_HOME</key>
-                                            <value>${basedir}/appconfig-local/</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                            <key>AJSC_CONF_HOME</key>
-                                            <value>${basedir}/bundleconfig-local</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                            <key>logback.configurationFile</key>
-                                            <value>${basedir}/ajsc-shared-config/etc/logback.xml</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                            <key>AJSC_SHARED_CONFIG</key>
-                                            <value>${basedir}/ajsc-shared-config</value>
-                                        </systemProperty>
-
-                                        <sysproperty>
-                                            <key>AJSC_EXTERNAL_LIB_FOLDERS</key>
-                                            <value>${basedir}/target/commonLibs</value>
-                                        </sysproperty>
-                                        <sysproperty>
-                                            <key>AJSC_EXTERNAL_PROPERTIES_FOLDERS</key>
-                                            <value>${basedir}/ajsc-shared-config/etc</value>
-                                        </sysproperty>
-
-                                        <systemProperty>
-                                            <key>AJSC_SERVICE_NAMESPACE</key>
-                                            <value>${module.ajsc.namespace.name}</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                            <key>AJSC_SERVICE_VERSION</key>
-                                            <value>${module.ajsc.namespace.version}</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                            <key>SOACLOUD_SERVICE_VERSION</key>
-                                            <value>${project.version}</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                            <key>server.port</key>
-                                            <value>${serverPort}</value>
-                                        </systemProperty>
-                                    </systemProperties>
-
-                                    <!-- Command Line Arguments to add to the java command. Here, you
-                                        can specify the port as well as the Context you want your service to run
-                                        in. Use context=/ to run in an unnamed Context (Root Context). The default
-                                        configuration of the AJSC is to run under the / Context. Setting the port
-                                        here can aid during the development phase of your service. However, you can
-                                        leave this argument out entirely, and the AJSC will default to using an Ephemeral
-                                        port. -->
-                                    <arguments>
-                                        <argument>context=/</argument>
-                                        <argument>port=${serverPort}</argument>
-                                        <argument>sslport=${sslport}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <executable>java</executable>
-                        </configuration>
-                        <dependencies>
-                            <dependency>
-                                <groupId>com.att.ajsc</groupId>
-                                <artifactId>ajsc-runner</artifactId>
-                                <version>${ajscRuntimeVersion}</version>
-                            </dependency>
-                        </dependencies>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

@@ -1,4 +1,0 @@
-<route xmlns="http://camel.apache.org/schema/spring" trace="true">
-  <from uri="att-dme2-servlet:///champ-service/v1/?matchOnUriPrefix=true" />
-  <to uri="cxfbean:champRestService" />
-</route>

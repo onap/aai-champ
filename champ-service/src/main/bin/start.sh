@@ -21,74 +21,43 @@
 # ECOMP is a trademark and service mark of AT&T Intellectual Property.
 #
 
-
-BASEDIR="/opt/app/champ-service/"
-AJSC_HOME="$BASEDIR"
-AJSC_CONF_HOME="$AJSC_HOME/bundleconfig/"
+APP_HOME="/opt/app/champ-service"
+GRAPH_DEPS_HOME="${APP_HOME}/graph-deps"
 
 if [ -z "$CONFIG_HOME" ]; then
-        echo "CONFIG_HOME must be set in order to start up process"
-        exit 1
+    echo "CONFIG_HOME must be set in order to start up process"
+    exit 1
 fi
 
 if [ -z "$KEY_STORE_PASSWORD" ]; then
-        echo "KEY_STORE_PASSWORD must be set in order to start up process"
-        exit 1
-else
-        echo "KEY_STORE_PASSWORD=$KEY_STORE_PASSWORD\n" >> $AJSC_CONF_HOME/etc/sysprops/sys-props.properties
+    echo "KEY_STORE_PASSWORD must be set in order to start up process"
+    exit 1
 fi
 
-if [ -z "$KEY_MANAGER_PASSWORD" ]; then
-        echo "KEY_MANAGER_PASSWORD must be set in order to start up process"
-        exit 1
-else
-        echo "KEY_MANAGER_PASSWORD=$KEY_MANAGER_PASSWORD\n" >> $AJSC_CONF_HOME/etc/sysprops/sys-props.properties
+if [ -z "$SERVICE_BEANS" ]; then
+    echo "SERVICE_BEANS must be set in order to start up process"
+    exit 1
 fi
 
-# Add any spring bean configuration files to the Gizmo deployment
-if [ -n "$SERVICE_BEANS" ]; then
-        echo "Adding the following dynamic service beans to the deployment: "
-        mkdir -p /tmp/champ-service/v1/conf
-        for f in `ls $SERVICE_BEANS`
-        do
-                cp $SERVICE_BEANS/$f /tmp/champ-service/v1/conf
-                echo "Adding dynamic service bean $SERVICE_BEANS/$f"
-        done
-        jar uf /opt/app/champ-service/services/champ-service_v1.zip* -C /tmp/ champ-service
-        rm -rf /tmp/champ-service
-fi
-
-CLASSPATH="$AJSC_HOME/lib/*"
-CLASSPATH="$CLASSPATH:$AJSC_HOME/extJars/"
-CLASSPATH="$CLASSPATH:$AJSC_HOME/etc/"
-
-# Check to see if the provided implementation exists in the image and add it to the classpath
-for file in $( find ${BASEDIR}graph-deps/* -maxdepth 0 -type d ); do
-        CURRIMPL=$(echo $file | cut -d"/" -f6)
-        if [ "x$GRAPHIMPL" = "x$CURRIMPL" ]; then
-                CLASSPATH_GRAPHIMPL=$file
-                echo "Setting up graph implementation of $GRAPHIMPL"
-        else
-                SUPPORTED_GRAPHIMPL="$SUPPORTED_GRAPHIMPL $CURRIMPL"
-        fi
+for dir in $( find ${GRAPH_DEPS_HOME}/* -maxdepth 0 -type d ); do
+    CURRIMPL=$(basename $dir)
+    if [ "x$GRAPHIMPL" = "x$CURRIMPL" ]; then
+        GRAPHIMPL_DEPS="${GRAPH_DEPS_HOME}/${GRAPHIMPL}"
+        echo "Setting up graph implementation to $GRAPHIMPL"
+    else
+        SUPPORTED_GRAPHIMPL="$SUPPORTED_GRAPHIMPL $CURRIMPL"
+    fi
 done
-if [ -n "$CLASSPATH_GRAPHIMPL" ]; then
-        cp $CLASSPATH_GRAPHIMPL/* $AJSC_HOME/extJars/
-else
-        echo "Configured graph implementation '$GRAPHIMPL' is not supported. Acceptable implementations are one of: $SUPPORTED_GRAPHIMPL"
-        exit 1
+
+if [ -z "$GRAPHIMPL_DEPS" ]; then
+    echo "Configured graph implementation '$GRAPHIMPL' is not supported. Acceptable implementations are one of: $SUPPORTED_GRAPHIMPL"
+    exit 1
 fi
 
-PROPS="-DAJSC_HOME=$AJSC_HOME"
-PROPS="$PROPS -DAJSC_CONF_HOME=$BASEDIR/bundleconfig/"
-PROPS="$PROPS -Dlogback.configurationFile=$BASEDIR/bundleconfig/etc/logback.xml"
-PROPS="$PROPS -DAJSC_SHARED_CONFIG=$AJSC_CONF_HOME"
-PROPS="$PROPS -DAJSC_SERVICE_NAMESPACE=champ-service"
-PROPS="$PROPS -DAJSC_SERVICE_VERSION=v1"
-PROPS="$PROPS -Dserver.port=9522"
+PROPS="-DAPP_HOME=$APP_HOME"
 PROPS="$PROPS -DCONFIG_HOME=$CONFIG_HOME"
+PROPS="$PROPS -DKEY_STORE_PASSWORD=$KEY_STORE_PASSWORD"
 JVM_MAX_HEAP=${MAX_HEAP:-1024}
 
-echo $CLASSPATH
-
-exec java -Xmx${JVM_MAX_HEAP}m $PROPS -classpath $CLASSPATH com.att.ajsc.runner.Runner context=// sslport=9522
+set -x
+exec java -Xmx${JVM_MAX_HEAP}m $PROPS -Dloader.path="${GRAPHIMPL_DEPS}" -jar "${APP_HOME}/champ-service.jar"

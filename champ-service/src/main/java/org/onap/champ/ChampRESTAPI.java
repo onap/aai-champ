@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Timer;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -44,7 +43,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onap.aai.champcore.ChampTransaction;
@@ -67,12 +65,11 @@ import org.onap.champ.service.logging.ChampMsgs;
 import org.onap.champ.service.logging.LoggingUtil;
 import org.onap.champ.util.ChampProperties;
 import org.onap.champ.util.ChampServiceConstants;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-@Path(value = "/")
+@Path(value = "/services/champ-service/v1/")
 public class ChampRESTAPI {
 
   private ObjectMapper mapper;
@@ -88,7 +85,7 @@ public class ChampRESTAPI {
   public ChampRESTAPI(ChampDataService champDataService, ChampAsyncRequestProcessor champAsyncRequestProcessor) {
     this.champDataService = champDataService;
 
-    // Async request handling is optional.  
+    // Async request handling is optional.
     if (champAsyncRequestProcessor != null) {
       timer = new Timer("ChampAsyncRequestProcessor-1");
       timer.schedule(champAsyncRequestProcessor, champAsyncRequestProcessor.getRequestPollingTimeSeconds(),
