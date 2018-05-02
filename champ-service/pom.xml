@@ -288,6 +288,14 @@ limitations under the License.
             </plugin>
 
             <plugin>
+                 <groupId>org.sonatype.plugins</groupId>
+                 <artifactId>nexus-staging-maven-plugin</artifactId>
+                 <configuration>
+                     <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                 </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <version>3.0</version>
