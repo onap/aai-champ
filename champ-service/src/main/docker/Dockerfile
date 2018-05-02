@@ -14,7 +14,7 @@ RUN export JAVA_HOME
 
 # Build up the deployment folder structure
 RUN mkdir -p $MICRO_HOME
-ADD swm/package/nix/dist_files/appl/champ-service/* $MICRO_HOME/
+COPY champ-service.jar $MICRO_HOME/
 RUN mkdir -p $GRAPHLIB_HOME
 ADD graph-deps $GRAPHLIB_HOME
 RUN mkdir -p $BIN_HOME
