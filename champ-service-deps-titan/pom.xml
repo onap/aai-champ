@@ -22,16 +22,14 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.onap.aai</groupId>
-    <artifactId>champ-service-deps-titan</artifactId>
-    <packaging>pom</packaging>
-    <version>1.2.0-SNAPSHOT</version>
-
     <parent>
         <groupId>org.onap.aai</groupId>
         <artifactId>champ</artifactId>
         <version>1.2.0-SNAPSHOT</version>
     </parent>
+
+    <artifactId>champ-service-deps-titan</artifactId>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
@@ -139,8 +137,13 @@ limitations under the License.
                     <groupId>org.onap.aai.event-client</groupId>
                     <artifactId>event-client-kafka</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-cassandra</artifactId>
@@ -216,6 +219,7 @@ limitations under the License.
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hbase</artifactId>

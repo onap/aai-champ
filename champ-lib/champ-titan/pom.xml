@@ -41,11 +41,13 @@ limitations under the License.
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${tinkerpop.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.onap.aai</groupId>
             <artifactId>champ-core</artifactId>
             <version>1.2.0-SNAPSHOT</version>
         </dependency>
+
         <dependency>
             <groupId>org.onap.aai</groupId>
             <artifactId>champ-core</artifactId>
@@ -53,6 +55,7 @@ limitations under the License.
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-cassandra</artifactId>
@@ -75,8 +78,13 @@ limitations under the License.
                     <groupId>org.apache.tinkerpop</groupId>
                     <artifactId>gremlin-core</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hbase</artifactId>
@@ -179,7 +187,6 @@ limitations under the License.
                     <skip>true</skip>
                 </configuration>
             </plugin>
-            <!-- Uncomment to add a license header to source files
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -200,17 +207,18 @@ limitations under the License.
                         <include>**/*aaiconfig*.properties</include>
                         <include>**/*titan*.properties</include>
                     </includes>
+                    <skipExistingHeaders>true</skipExistingHeaders>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>format</goal>
+                            <!-- Set goal to "format" to auto update license headers -->
+                            <goal>check</goal>
                         </goals>
                         <phase>process-sources</phase>
                     </execution>
                 </executions>
             </plugin>
-            -->
         </plugins>
     </build>
 </project>

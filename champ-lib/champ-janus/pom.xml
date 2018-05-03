@@ -25,8 +25,8 @@ limitations under the License.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>champ-lib</artifactId>
         <groupId>org.onap.aai</groupId>
+        <artifactId>champ-lib</artifactId>
         <version>1.2.0-SNAPSHOT</version>
     </parent>
 
@@ -42,11 +42,13 @@ limitations under the License.
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${tinkerpop.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.onap.aai</groupId>
             <artifactId>champ-core</artifactId>
             <version>1.2.0-SNAPSHOT</version>
         </dependency>
+
         <dependency>
             <groupId>org.onap.aai</groupId>
             <artifactId>champ-core</artifactId>
@@ -54,6 +56,7 @@ limitations under the License.
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.janusgraph</groupId>
             <artifactId>janusgraph-cassandra</artifactId>
@@ -78,6 +81,7 @@ limitations under the License.
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.janusgraph</groupId>
             <artifactId>janusgraph-hbase</artifactId>
@@ -91,10 +95,6 @@ limitations under the License.
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.tinkerpop</groupId>
@@ -180,7 +180,6 @@ limitations under the License.
                     <skip>true</skip>
                 </configuration>
             </plugin>
-            <!-- Uncomment to add a license header to source files
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -201,17 +200,18 @@ limitations under the License.
                         <include>**/*aaiconfig*.properties</include>
                         <include>**/*titan*.properties</include>
                     </includes>
+                    <skipExistingHeaders>true</skipExistingHeaders>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>format</goal>
+                            <!-- Set goal to "format" to auto update license headers -->
+                            <goal>check</goal>
                         </goals>
                         <phase>process-sources</phase>
                     </execution>
                 </executions>
             </plugin>
-            -->
         </plugins>
     </build>
 </project>

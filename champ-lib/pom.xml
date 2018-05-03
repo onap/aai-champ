@@ -22,16 +22,14 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.onap.aai</groupId>
-    <artifactId>champ-lib</artifactId>
-    <packaging>pom</packaging>
-    <version>1.2.0-SNAPSHOT</version>
-
     <parent>
         <groupId>org.onap.aai</groupId>
         <artifactId>champ</artifactId>
         <version>1.2.0-SNAPSHOT</version>
     </parent>
+
+    <artifactId>champ-lib</artifactId>
+    <packaging>pom</packaging>
 
     <modules>
         <module>champ-core</module>
@@ -41,8 +39,6 @@ limitations under the License.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <event.client.version>1.2.1</event.client.version>
-
         <!--<absoluteDistFilesRoot>/appl/${project.artifactId}</absoluteDistFilesRoot>-->
 
         <!--&lt;!&ndash; For NO Versioning, REMOVE the /${project.version} from the <distFilesRoot>-->
@@ -53,53 +49,12 @@ limitations under the License.
         <!--<distFilesRoot>/appl/${project.artifactId}/${project.version}</distFilesRoot>-->
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.onap.aai.event-client</groupId>
-                <artifactId>event-client-api</artifactId>
-                <version>${event.client.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.onap.aai.event-client</groupId>
-                <artifactId>event-client-dmaap</artifactId>
-                <version>${event.client.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.onap.aai.event-client</groupId>
-                <artifactId>event-client-kafka</artifactId>
-                <version>${event.client.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.1</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-            <version>0.98.4-hadoop2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>jdk.tools</groupId>
@@ -198,25 +153,6 @@ limitations under the License.
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-jar-with-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.6.1</version>
                 <configuration>
@@ -278,7 +214,6 @@ limitations under the License.
                     <skip>true</skip>
                 </configuration>
             </plugin>
-            <!-- Uncomment to add a license header to source files
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -299,17 +234,18 @@ limitations under the License.
                         <include>**/*aaiconfig*.properties</include>
                         <include>**/*titan*.properties</include>
                     </includes>
+                    <skipExistingHeaders>true</skipExistingHeaders>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>format</goal>
+                            <!-- Set goal to "format" to auto update license headers -->
+                            <goal>check</goal>
                         </goals>
                         <phase>process-sources</phase>
                     </execution>
                 </executions>
             </plugin>
-            -->
         </plugins>
     </build>
 </project>

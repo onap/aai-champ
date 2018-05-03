@@ -30,6 +30,7 @@ limitations under the License.
 
     <properties>
         <onap.nexus.url>https://nexus.onap.org</onap.nexus.url>
+        <event.client.version>1.2.1</event.client.version>
     </properties>
 
     <modules>
@@ -38,6 +39,94 @@ limitations under the License.
         <module>champ-service-deps-titan</module>
         <module>champ-service</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.onap.aai.event-client</groupId>
+                <artifactId>event-client-api</artifactId>
+                <version>${event.client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.onap.aai.event-client</groupId>
+                <artifactId>event-client-api</artifactId>
+                <version>${event.client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.onap.aai.event-client</groupId>
+                <artifactId>event-client-dmaap</artifactId>
+                <version>${event.client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.onap.aai.event-client</groupId>
+                <artifactId>event-client-kafka</artifactId>
+                <version>${event.client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>20040616</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>1.2.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>2.7.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>1.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.onap.dmaap.messagerouter.dmaapclient</groupId>
+                <artifactId>dmaapClient</artifactId>
+                <version>1.1.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>4.1.24.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>3.10.6.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+                <version>3.4.12</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.8.11</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <distributionManagement>
         <repository>
