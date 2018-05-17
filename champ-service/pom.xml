@@ -32,10 +32,10 @@ limitations under the License.
     <groupId>org.onap.aai</groupId>
     <artifactId>champ-service</artifactId>
     <version>1.2.1-SNAPSHOT</version>
-    <name>champ</name>
 
     <properties>
         <docker.location>${basedir}/target</docker.location>
+        <docker.name>champ</docker.name>
         <onap.nexus.url>https://nexus.onap.org</onap.nexus.url>
         <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
         <common.logging.version>1.2.2</common.logging.version>
@@ -291,22 +291,6 @@ limitations under the License.
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                 <groupId>org.sonatype.plugins</groupId>
-                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                 <configuration>
-                     <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-                 </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <version>3.0</version>
@@ -337,7 +321,7 @@ limitations under the License.
                 <configuration>
                     <verbose>true</verbose>
                     <serverId>docker-hub</serverId>
-                    <imageName>${docker.push.registry}/onap/${project.name}</imageName>
+                    <imageName>${docker.push.registry}/onap/${docker.name}</imageName>
                     <dockerDirectory>${docker.location}</dockerDirectory>
                     <imageTags>
                         <imageTag>latest</imageTag>
