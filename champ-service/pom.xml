@@ -24,14 +24,13 @@ limitations under the License.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.onap.oparent</groupId>
-        <artifactId>oparent</artifactId>
-        <version>1.1.0</version>
+        <groupId>org.onap.aai</groupId>
+        <artifactId>champ</artifactId>
+        <version>1.2.1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.onap.aai.champ</groupId>
     <artifactId>champ-service</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
 
     <properties>
         <docker.location>${basedir}/target</docker.location>
@@ -160,9 +159,9 @@ limitations under the License.
         </dependency>
 
         <dependency>
-            <groupId>org.onap.aai</groupId>
+            <groupId>org.onap.aai.champ.champ-lib</groupId>
             <artifactId>champ-core</artifactId>
-            <version>1.2.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>

@@ -24,11 +24,12 @@ limitations under the License.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
+        <groupId>org.onap.aai.champ</groupId>
         <artifactId>champ-lib</artifactId>
-        <groupId>org.onap.aai</groupId>
         <version>1.2.1-SNAPSHOT</version>
     </parent>
 
+    <groupId>org.onap.aai.champ.champ-lib</groupId>
     <artifactId>champ-titan</artifactId>
 
     <properties>
@@ -43,15 +44,15 @@ limitations under the License.
         </dependency>
 
         <dependency>
-            <groupId>org.onap.aai</groupId>
+            <groupId>org.onap.aai.champ.champ-lib</groupId>
             <artifactId>champ-core</artifactId>
-            <version>1.2.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.onap.aai</groupId>
+            <groupId>org.onap.aai.champ.champ-lib</groupId>
             <artifactId>champ-core</artifactId>
-            <version>1.2.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
