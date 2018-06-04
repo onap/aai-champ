@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Timer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -81,6 +83,8 @@ public class ChampRESTAPI {
   private Logger logger = LoggerFactory.getInstance().getLogger(ChampRESTAPI.class);
   Logger auditLogger = LoggerFactory.getInstance().getAuditLogger(ChampRESTAPI.class.getName());
   private static Logger metricsLogger = LoggerFactory.getInstance().getMetricsLogger(ChampRESTAPI.class.getName());
+  private static final Pattern QUERY_OBJECT_ID_URL_MATCH = Pattern.compile("_reserved_(.*)");
+
 
   public ChampRESTAPI(ChampDataService champDataService, ChampAsyncRequestProcessor champAsyncRequestProcessor) {
     this.champDataService = champDataService;
@@ -294,7 +298,7 @@ public class ChampRESTAPI {
     Map<String, Object> filter = new HashMap<>();
 
     for (Map.Entry<String, List<String>> e : uriInfo.getQueryParameters().entrySet()) {
-      if (!e.getKey().equals(propertiesKey)) {
+      if ((!e.getKey().equals(propertiesKey)) && !reservedKeyMatcher ( QUERY_OBJECT_ID_URL_MATCH, e.getKey () )) {
         filter.put(e.getKey(), e.getValue().get(0));
       }
     }
@@ -479,7 +483,9 @@ public class ChampRESTAPI {
     List<ChampRelationship> list;
     Map<String, Object> filter = new HashMap<>();
     for (Map.Entry<String, List<String>> e : uriInfo.getQueryParameters().entrySet()) {
-      filter.put(e.getKey(), e.getValue().get(0));
+      if (!reservedKeyMatcher ( QUERY_OBJECT_ID_URL_MATCH, e.getKey () )) {
+        filter.put ( e.getKey (), e.getValue ().get ( 0 ) );
+      }
     }
     Response response = null;
     try {
@@ -588,6 +594,15 @@ public class ChampRESTAPI {
       metricsLogger.info(ChampMsgs.PROCESSED_REQUEST, "PUT", Long.toString(System.currentTimeMillis() - startTimeInMs));
     }
     return response;
+  }
+
+  private boolean reservedKeyMatcher(Pattern p, String key) {
+    Matcher m = p.matcher ( key );
+    if (m.matches()) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
 }
