@@ -19,7 +19,7 @@
  * ============LICENSE_END============================================
  * ECOMP is a trademark and service mark of AT&T Intellectual Property.
  */
-package org.onap.champ.event.envelope;
+package org.onap.aai.champcore.event.envelope;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -31,11 +31,24 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
-public class GraphEventHeader {
+public class ChampEventHeader {
 
     private static final String SOURCE_NAME = "CHAMP";
 
-    private static final String EVENT_TYPE = "db-update-result";
+    public enum EventType {
+        UPDATE_RESULT("update-result"),
+        UPDATE_NOTIFICATION("update-notification-raw");
+
+        private final String name;
+
+        EventType(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
 
     @SerializedName("request-id")
     private String requestId;
@@ -59,16 +72,18 @@ public class GraphEventHeader {
 
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
     public static class Builder {
+
+        private final EventType eventType;
 
         private String requestId;
         private String validationEntityType;
         private String validationTopEntityType;
         private String entityLink;
+
+        public Builder(EventType eventType) {
+            this.eventType = eventType;
+        }
 
         public Builder requestId(String val) {
             requestId = val;
@@ -90,16 +105,16 @@ public class GraphEventHeader {
             return this;
         }
 
-        public GraphEventHeader build() {
-            return new GraphEventHeader(this);
+        public ChampEventHeader build() {
+            return new ChampEventHeader(this);
         }
     }
 
-    private GraphEventHeader(Builder builder) {
+    private ChampEventHeader(Builder builder) {
         requestId = builder.requestId != null ? builder.requestId : UUID.randomUUID().toString();
         timestamp = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssX").withZone(ZoneOffset.UTC).format(Instant.now());
         sourceName = SOURCE_NAME;
-        eventType = EVENT_TYPE;
+        eventType = builder.eventType.getName();
 
         validationEntityType = builder.validationEntityType;
         validationTopEntityType = builder.validationTopEntityType;
@@ -197,18 +212,18 @@ public class GraphEventHeader {
      */
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof GraphEventHeader)) {
+        if (!(obj instanceof ChampEventHeader)) {
             return false;
         } else if (obj == this) {
             return true;
         }
-        GraphEventHeader rhs = (GraphEventHeader) obj;
+        ChampEventHeader rhs = (ChampEventHeader) obj;
      // @formatter:off
      return new EqualsBuilder()
                   .append(requestId, rhs.requestId)
                   .append(timestamp, rhs.timestamp)
                   .append(sourceName, rhs.sourceName)
-                  .append(eventType, rhs.sourceName)
+                  .append(eventType, rhs.eventType)
                   .append(validationEntityType, rhs.validationEntityType)
                   .append(validationTopEntityType, rhs.validationTopEntityType)
                   .append(entityLink, rhs.entityLink)

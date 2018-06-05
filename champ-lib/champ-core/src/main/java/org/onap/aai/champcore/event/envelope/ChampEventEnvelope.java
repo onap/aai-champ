@@ -19,32 +19,30 @@
  * ============LICENSE_END============================================
  * ECOMP is a trademark and service mark of AT&T Intellectual Property.
  */
-package org.onap.champ.event.envelope;
+package org.onap.aai.champcore.event.envelope;
 
-import javax.ws.rs.core.Response.Status;
-import org.onap.aai.champcore.event.envelope.ChampEventHeader;
-import org.onap.champ.event.GraphEvent;
-import org.onap.champ.exception.ChampServiceException;
+import org.onap.aai.champcore.event.ChampEvent;
+import org.onap.aai.champcore.exceptions.ChampUnmarshallingException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class GraphEventEnvelope {
+public class ChampEventEnvelope {
 
     private ChampEventHeader header;
-    private GraphEvent body;
+    private ChampEvent body;
 
     /**
-     * Serializer/deserializer for converting to/from JSON.
+     * Marshaller/unmarshaller for converting to/from JSON.
      */
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
-    public GraphEventEnvelope(GraphEvent event) {
-        this.header = new ChampEventHeader.Builder(ChampEventHeader.EventType.UPDATE_RESULT)
+    public ChampEventEnvelope(ChampEvent event) {
+        this.header = new ChampEventHeader.Builder(ChampEventHeader.EventType.UPDATE_NOTIFICATION)
                 .requestId(event.getTransactionId()).build();
         this.body = event;
     }
 
-    public GraphEventEnvelope(ChampEventHeader header, GraphEvent body) {
+    public ChampEventEnvelope(ChampEventHeader header, ChampEvent body) {
         this.header = header;
         this.body = body;
     }
@@ -57,11 +55,11 @@ public class GraphEventEnvelope {
         this.header = header;
     }
 
-    public GraphEvent getBody() {
+    public ChampEvent getBody() {
         return body;
     }
 
-    public void setBody(GraphEvent body) {
+    public void setBody(ChampEvent body) {
         this.body = body;
     }
 
@@ -79,16 +77,16 @@ public class GraphEventEnvelope {
      *
      * @param json the JSON string to produce the Event Envelope from.
      * @return an Event Envelope object.
-     * @throws ChampServiceException
+     * @throws ChampUnmarshallingException
      */
-    public static GraphEventEnvelope fromJson(String json) throws ChampServiceException {
+    public static ChampEventEnvelope fromJson(String json) throws ChampUnmarshallingException {
         try {
             if (json == null || json.isEmpty()) {
-                throw new ChampServiceException("Empty or null JSON string.", Status.BAD_REQUEST);
+                throw new ChampUnmarshallingException("Empty or null JSON string.");
             }
-            return gson.fromJson(json, GraphEventEnvelope.class);
+            return gson.fromJson(json, ChampEventEnvelope.class);
         } catch (Exception ex) {
-            throw new ChampServiceException("Unable to parse JSON string: ", Status.BAD_REQUEST);
+            throw new ChampUnmarshallingException("Unable to parse JSON string: ");
         }
     }
 
@@ -96,5 +94,4 @@ public class GraphEventEnvelope {
     public String toString() {
         return toJson();
     }
-
 }

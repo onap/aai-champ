@@ -22,10 +22,6 @@ package org.onap.champ.event;
 
 import javax.ws.rs.core.Response.Status;
 
-import org.onap.champ.exception.ChampServiceException;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
 public class GraphEvent {
@@ -58,12 +54,6 @@ public class GraphEvent {
   private String errorMessage;
 
   private Status httpErrorStatus;
-
-  /**
-   * Marshaller/unmarshaller for converting to/from JSON.
-   */
-  private static final Gson gson = new GsonBuilder().disableHtmlEscaping()
-      .setPrettyPrinting().create();
 
   public static Builder builder(GraphEventOperation operation) {
     return new Builder(operation);
@@ -132,47 +122,6 @@ public class GraphEvent {
 
   public void setEdge(GraphEventEdge edge) {
     this.edge = edge;
-  }
-
-  /**
-   * Unmarshalls this Vertex object into a JSON string.
-   *
-   * @return - A JSON format string representation of this Vertex.
-   */
-  public String toJson() {
-    return gson.toJson(this);
-  }
-
-  /**
-   * Marshalls the provided JSON string into a Vertex object.
-   *
-   * @param json - The JSON string to produce the Vertex from.
-   * @return - A Vertex object.
-   * @throws SpikeException
-   */
-  public static GraphEvent fromJson(String json) throws ChampServiceException {
-
-    try {
-
-      // Make sure that we were actually provided a non-empty string
-      // before we
-      // go any further.
-      if (json == null || json.isEmpty()) {
-        throw new ChampServiceException("Empty or null JSON string.", Status.BAD_REQUEST);
-      }
-
-      // Marshall the string into a Vertex object.
-      return gson.fromJson(json, GraphEvent.class);
-
-    } catch (Exception ex) {
-      throw new ChampServiceException("Unable to parse JSON string: ", Status.BAD_REQUEST);
-    }
-  }
-
-  @Override
-  public String toString() {
-
-    return toJson();
   }
 
   public String getObjectKey() {
