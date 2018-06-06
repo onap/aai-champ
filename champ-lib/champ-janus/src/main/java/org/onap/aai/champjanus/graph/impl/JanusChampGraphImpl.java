@@ -41,6 +41,7 @@ import org.onap.aai.champcore.schema.DefaultChampSchemaEnforcer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.SecureRandom;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -78,7 +79,7 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
       janusGraphBuilder.set(janusGraphProperty.getKey(), janusGraphProperty.getValue());
     }
     
-    janusGraphBuilder.set(JANUS_UNIQUE_SUFFIX, ((short) new Random().nextInt(Short.MAX_VALUE)+""));
+    janusGraphBuilder.set(JANUS_UNIQUE_SUFFIX, ((short) new SecureRandom().nextInt(Short.MAX_VALUE)+""));
 
     final Object storageBackend = builder.graphConfiguration.get("storage.backend");
 

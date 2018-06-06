@@ -97,6 +97,7 @@ public class GraphMLImporterExporter implements Importer, Exporter {
 
 		try {
 			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true); 
 			final DocumentBuilder builder = factory.newDocumentBuilder();
 			final InputSource inputSource = new InputSource(is);
 		    final Document doc = builder.parse(inputSource);

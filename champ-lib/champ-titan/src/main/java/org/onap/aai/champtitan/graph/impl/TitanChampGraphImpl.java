@@ -20,6 +20,7 @@
  */
 package org.onap.aai.champtitan.graph.impl;
 
+import java.security.SecureRandom;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.Map.Entry;
@@ -31,8 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.onap.aai.champcore.ChampCapabilities;
-import org.onap.aai.champcore.FormatMapper;
-import org.onap.aai.champcore.Formatter;
 import org.onap.aai.champcore.exceptions.ChampIndexNotExistsException;
 import org.onap.aai.champcore.exceptions.ChampSchemaViolationException;
 import org.onap.aai.champcore.graph.impl.AbstractTinkerpopChampGraph;
@@ -96,7 +95,7 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
       titanGraphBuilder.set(titanGraphProperty.getKey(), titanGraphProperty.getValue());
     }
 
-    titanGraphBuilder.set(TITAN_UNIQUE_SUFFIX, ((short) new Random().nextInt(Short.MAX_VALUE)+""));
+    titanGraphBuilder.set(TITAN_UNIQUE_SUFFIX, ((short) new SecureRandom().nextInt(Short.MAX_VALUE)+""));
     
     final Object storageBackend = builder.graphConfiguration.get("storage.backend");
 
