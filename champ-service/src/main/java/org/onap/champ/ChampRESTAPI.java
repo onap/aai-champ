@@ -21,6 +21,7 @@
 package org.onap.champ;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -67,6 +69,7 @@ import org.onap.champ.service.logging.ChampMsgs;
 import org.onap.champ.service.logging.LoggingUtil;
 import org.onap.champ.util.ChampProperties;
 import org.onap.champ.util.ChampServiceConstants;
+import org.onap.champ.util.etag.EtagGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -77,6 +80,7 @@ public class ChampRESTAPI {
   private ObjectMapper mapper;
 
   private ChampDataService champDataService;
+  private EtagGenerator etagGenerator;
   private String TRANSACTION_METHOD = "method";
   private Timer timer;
 
@@ -85,8 +89,7 @@ public class ChampRESTAPI {
   private static Logger metricsLogger = LoggerFactory.getInstance().getMetricsLogger(ChampRESTAPI.class.getName());
   private static final Pattern QUERY_OBJECT_ID_URL_MATCH = Pattern.compile("_reserved_(.*)");
 
-
-  public ChampRESTAPI(ChampDataService champDataService, ChampAsyncRequestProcessor champAsyncRequestProcessor) {
+  public ChampRESTAPI(ChampDataService champDataService, ChampAsyncRequestProcessor champAsyncRequestProcessor) throws NoSuchAlgorithmException {
     this.champDataService = champDataService;
 
     // Async request handling is optional.
@@ -103,6 +106,8 @@ public class ChampRESTAPI {
     module.addSerializer(ChampRelationship.class, new ChampRelationshipSerializer());
     module.addDeserializer(ChampRelationship.class, new ChampRelationshipDeserializer());
     mapper.registerModule(module);
+
+    etagGenerator = new EtagGenerator();
   }
 
   @GET
@@ -134,13 +139,17 @@ public class ChampRESTAPI {
       if (retrieved == null) {
         response = Response.status(Status.NOT_FOUND).entity(objectId + " not found").build();
       } else {
-        response = Response.status(Status.OK).entity(mapper.writeValueAsString(retrieved)).build();
+        EntityTag etag = new EntityTag(etagGenerator.computeHashForChampObject(retrieved));
+        response = Response.status(Status.OK).entity(mapper.writeValueAsString(retrieved)).tag(etag).build();
       }
 
     } catch (JsonProcessingException e) {
       response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (ChampServiceException ce) {
       response = Response.status(ce.getHttpStatus()).entity(ce.getMessage()).build();
+    } catch (Exception e) {
+        response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+        LoggingUtil.logInternalError(logger, e);
     } finally {
       logger.debug(response.getEntity().toString());
       LoggingUtil.logRestRequest(logger, auditLogger, req, response);
@@ -157,7 +166,6 @@ public class ChampRESTAPI {
     LoggingUtil.initMdcContext(req, headers);
     long startTimeInMs = System.currentTimeMillis();
     logger.info(ChampMsgs.INCOMING_REQUEST, tId, objectId);
-    ChampObject retrieved;
     Response response = null;
     try {
       ChampTransaction transaction = champDataService.getTransaction(tId);
@@ -200,7 +208,8 @@ public class ChampRESTAPI {
       ChampObject champObject = mapper.readValue(champObj, ChampObject.class);
 
       ChampObject created = champDataService.storeObject(champObject, Optional.ofNullable(transaction));
-      response = Response.status(Status.CREATED).entity(mapper.writeValueAsString(created)).build();
+      EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampObject(created));
+      response = Response.status(Status.CREATED).entity(mapper.writeValueAsString(created)).tag(eTag).build();
     } catch (IOException e) {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
     } catch (ChampServiceException ce) {
@@ -239,8 +248,8 @@ public class ChampRESTAPI {
       ChampObject co = mapper.readValue(champObj, ChampObject.class);
       // check if key is present or if it equals the key that is in the URI
       ChampObject updated = champDataService.replaceObject(co, objectId, Optional.ofNullable(transaction));
-
-      response = Response.status(Status.OK).entity(mapper.writeValueAsString(updated)).build();
+      EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampObject(updated));
+      response = Response.status(Status.OK).entity(mapper.writeValueAsString(updated)).tag(eTag).build();
     } catch (IOException e) {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
     } catch (ChampServiceException ce) {
@@ -265,13 +274,12 @@ public class ChampRESTAPI {
     LoggingUtil.initMdcContext(req, headers);
     long startTimeInMs = System.currentTimeMillis();
     List<ChampRelationship> retrieved;
-    Optional<ChampObject> rObject;
     Response response = null;
     ChampTransaction transaction = null;
     try {
-
       retrieved = champDataService.getRelationshipsByObject(oId, Optional.ofNullable(transaction));
-      response = Response.status(Status.OK).entity(mapper.writeValueAsString(retrieved)).build();
+      EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampRelationships(retrieved));
+      response = Response.status(Status.OK).entity(mapper.writeValueAsString(retrieved)).tag(eTag).build();
     } catch (JsonProcessingException e) {
       response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (ChampServiceException ce) {
@@ -294,7 +302,7 @@ public class ChampRESTAPI {
     LoggingUtil.initMdcContext(req, headers);
     long startTimeInMs = System.currentTimeMillis();
     String propertiesKey = ChampProperties.get(ChampServiceConstants.CHAMP_COLLECTION_PROPERTIES_KEY);
-    List<ChampObject> objects;
+    List<ChampObject> champObjects;
     Map<String, Object> filter = new HashMap<>();
 
     for (Map.Entry<String, List<String>> e : uriInfo.getQueryParameters().entrySet()) {
@@ -312,8 +320,9 @@ public class ChampRESTAPI {
 
     Response response = null;
     try {
-      objects = champDataService.queryObjects(filter, properties);
-      response = Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(mapper.writeValueAsString(objects))
+      champObjects = champDataService.queryObjects(filter, properties);
+      EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampObjects(champObjects));
+      response = Response.status(Status.OK).type(MediaType.APPLICATION_JSON).tag(eTag).entity(mapper.writeValueAsString(champObjects))
           .build();
     } catch (JsonProcessingException e) {
       e.printStackTrace();
@@ -351,7 +360,8 @@ public class ChampRESTAPI {
         response = Response.status(Status.NOT_FOUND).entity(rId + " not found").build();
         return response;
       }
-      response = Response.status(Status.OK).entity(mapper.writeValueAsString(retrieved)).build();
+      EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampRelationship(retrieved));
+      response = Response.status(Status.OK).entity(mapper.writeValueAsString(retrieved)).tag(eTag).build();
 
     } catch (IOException e) {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
@@ -385,8 +395,8 @@ public class ChampRESTAPI {
       ChampRelationship r = mapper.readValue(relationship, ChampRelationship.class);
 
       ChampRelationship created = champDataService.storeRelationship(r, Optional.ofNullable(transaction));
-
-      response = Response.status(Status.CREATED).entity(mapper.writeValueAsString(created)).build();
+      EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampRelationship(created));
+      response = Response.status(Status.CREATED).entity(mapper.writeValueAsString(created)).tag(eTag).build();
     } catch (IOException e) {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
     } catch (ChampServiceException ce) {
@@ -423,8 +433,8 @@ public class ChampRESTAPI {
       }
       ChampRelationship r = mapper.readValue(relationship, ChampRelationship.class);
       ChampRelationship updated = champDataService.updateRelationship(r, rId, Optional.ofNullable(transaction));
-
-      response = Response.status(Status.OK).entity(mapper.writeValueAsString(updated)).build();
+      EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampRelationship(updated));
+      response = Response.status(Status.OK).entity(mapper.writeValueAsString(updated)).tag(eTag).build();
     } catch (IOException e) {
       response = Response.status(Status.BAD_REQUEST).entity("Unable to parse the payload").build();
     } catch (ChampServiceException ce) {
@@ -480,7 +490,7 @@ public class ChampRESTAPI {
       @Context HttpServletRequest req) {
     LoggingUtil.initMdcContext(req, headers);
     long startTimeInMs = System.currentTimeMillis();
-    List<ChampRelationship> list;
+    List<ChampRelationship> champRelationshipList;
     Map<String, Object> filter = new HashMap<>();
     for (Map.Entry<String, List<String>> e : uriInfo.getQueryParameters().entrySet()) {
       if (!reservedKeyMatcher ( QUERY_OBJECT_ID_URL_MATCH, e.getKey () )) {
@@ -489,8 +499,9 @@ public class ChampRESTAPI {
     }
     Response response = null;
     try {
-      list = champDataService.queryRelationships(filter);
-      response = Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(mapper.writeValueAsString(list))
+      champRelationshipList = champDataService.queryRelationships(filter);
+      EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampRelationships(champRelationshipList));
+      response = Response.status(Status.OK).type(MediaType.APPLICATION_JSON).tag(eTag).entity(mapper.writeValueAsString(champRelationshipList))
           .build();
     } catch (JsonProcessingException e) {
       e.printStackTrace();
@@ -595,7 +606,6 @@ public class ChampRESTAPI {
     }
     return response;
   }
-
   private boolean reservedKeyMatcher(Pattern p, String key) {
     Matcher m = p.matcher ( key );
     if (m.matches()) {
