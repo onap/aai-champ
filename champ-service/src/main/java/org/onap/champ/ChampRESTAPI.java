@@ -69,6 +69,7 @@ import org.onap.champ.service.logging.ChampMsgs;
 import org.onap.champ.service.logging.LoggingUtil;
 import org.onap.champ.util.ChampProperties;
 import org.onap.champ.util.ChampServiceConstants;
+import org.onap.champ.util.HttpHeadersValidator;
 import org.onap.champ.util.etag.EtagGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,6 +82,7 @@ public class ChampRESTAPI {
 
   private ChampDataService champDataService;
   private EtagGenerator etagGenerator;
+  private HttpHeadersValidator httpHeadersValidator;
   private String TRANSACTION_METHOD = "method";
   private Timer timer;
 
@@ -108,6 +110,7 @@ public class ChampRESTAPI {
     mapper.registerModule(module);
 
     etagGenerator = new EtagGenerator();
+    httpHeadersValidator = new HttpHeadersValidator();
   }
 
   @GET
@@ -130,6 +133,7 @@ public class ChampRESTAPI {
     ChampObject retrieved;
 
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = champDataService.getTransaction(tId);
 
       if (tId != null && transaction == null) {
@@ -168,6 +172,7 @@ public class ChampRESTAPI {
     logger.info(ChampMsgs.INCOMING_REQUEST, tId, objectId);
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = champDataService.getTransaction(tId);
 
       if (tId != null && transaction == null) {
@@ -201,6 +206,7 @@ public class ChampRESTAPI {
     logger.info(ChampMsgs.INCOMING_REQUEST, tId, champObj);
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = champDataService.getTransaction(tId);
       if (tId != null && transaction == null) {
         throw new ChampServiceException("transactionId not found", Status.BAD_REQUEST);
@@ -240,6 +246,7 @@ public class ChampRESTAPI {
 
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = champDataService.getTransaction(tId);
       if (tId != null && transaction == null) {
         throw new ChampServiceException("transactionId not found", Status.BAD_REQUEST);
@@ -277,6 +284,7 @@ public class ChampRESTAPI {
     Response response = null;
     ChampTransaction transaction = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       retrieved = champDataService.getRelationshipsByObject(oId, Optional.ofNullable(transaction));
       EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampRelationships(retrieved));
       response = Response.status(Status.OK).entity(mapper.writeValueAsString(retrieved)).tag(eTag).build();
@@ -320,12 +328,12 @@ public class ChampRESTAPI {
 
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       champObjects = champDataService.queryObjects(filter, properties);
       EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampObjects(champObjects));
       response = Response.status(Status.OK).type(MediaType.APPLICATION_JSON).tag(eTag).entity(mapper.writeValueAsString(champObjects))
           .build();
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
       response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (ChampServiceException e1) {
       response = Response.status(e1.getHttpStatus()).entity(e1.getMessage()).build();
@@ -350,6 +358,7 @@ public class ChampRESTAPI {
     ChampRelationship retrieved;
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = champDataService.getTransaction(tId);
 
       if (tId != null && transaction == null) {
@@ -388,6 +397,7 @@ public class ChampRESTAPI {
     logger.info(ChampMsgs.INCOMING_REQUEST, tId, relationship);
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = champDataService.getTransaction(tId);
       if (tId != null && transaction == null) {
         throw new ChampServiceException("transactionId not found", Status.BAD_REQUEST);
@@ -427,6 +437,7 @@ public class ChampRESTAPI {
 
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = champDataService.getTransaction(tId);
       if (tId != null && transaction == null) {
         throw new ChampServiceException("transactionId not found", Status.BAD_REQUEST);
@@ -462,6 +473,7 @@ public class ChampRESTAPI {
 
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = champDataService.getTransaction(tId);
       if (tId != null && transaction == null) {
         throw new ChampServiceException("transactionId not found", Status.BAD_REQUEST);
@@ -499,12 +511,12 @@ public class ChampRESTAPI {
     }
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       champRelationshipList = champDataService.queryRelationships(filter);
       EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampRelationships(champRelationshipList));
       response = Response.status(Status.OK).type(MediaType.APPLICATION_JSON).tag(eTag).entity(mapper.writeValueAsString(champRelationshipList))
           .build();
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
       response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (ChampServiceException e1) {
       response = Response.status(e1.getHttpStatus()).entity(e1.getMessage()).build();
@@ -525,14 +537,19 @@ public class ChampRESTAPI {
       @Context HttpServletRequest req) {
     LoggingUtil.initMdcContext(req, headers);
     long startTimeInMs = System.currentTimeMillis();
-    Status s;
-    String transaction = champDataService.openTransaction();
-
-    s = Status.OK;
-    Response response = Response.status(s).entity(transaction).build();
-    logger.info(ChampMsgs.PROCESS_EVENT, "Opened Transaction with ID: " + transaction, s.toString());
-    LoggingUtil.logRestRequest(logger, auditLogger, req, response);
-    metricsLogger.info(ChampMsgs.PROCESSED_REQUEST, "POST", Long.toString(System.currentTimeMillis() - startTimeInMs));
+    Response response = null;
+    try {
+      httpHeadersValidator.validateRequestHeaders(headers);
+      String transaction = champDataService.openTransaction();
+      Status s = Status.OK;
+      response = Response.status(s).entity(transaction).build();
+      logger.info(ChampMsgs.PROCESS_EVENT, "Opened Transaction with ID: " + transaction, s.toString());
+    } catch (ChampServiceException e) {
+      response = Response.status(e.getHttpStatus()).entity(e.getMessage()).build();
+    } finally {
+      LoggingUtil.logRestRequest(logger, auditLogger, req, response);
+      metricsLogger.info(ChampMsgs.PROCESSED_REQUEST, "POST", Long.toString(System.currentTimeMillis() - startTimeInMs));
+    }
     return response;
   }
 
@@ -551,9 +568,12 @@ public class ChampRESTAPI {
     }
 
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       response = Response.status(Status.OK).entity(mapper.writeValueAsString(tId + " is OPEN")).build();
     } catch (JsonProcessingException e) {
       response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+    } catch (ChampServiceException e) {
+        response = Response.status(e.getHttpStatus()).entity(e.getMessage()).build();
     } catch (Exception e) {
       response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
       LoggingUtil.logInternalError(logger, e);
@@ -576,6 +596,7 @@ public class ChampRESTAPI {
 
     Response response = null;
     try {
+      httpHeadersValidator.validateRequestHeaders(headers);
       JSONObject jsonObj = new JSONObject(t);
       String method = jsonObj.getString(this.TRANSACTION_METHOD);
 
@@ -606,6 +627,7 @@ public class ChampRESTAPI {
     }
     return response;
   }
+
   private boolean reservedKeyMatcher(Pattern p, String key) {
     Matcher m = p.matcher ( key );
     if (m.matches()) {
