@@ -35,8 +35,8 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 public class ChampEventEnvelopeTest {
 
     @Test
-    public void testEventEnvelopeFormat() throws Exception {
-        String expectedEnvelope = TestUtil.getFileAsString("event/event-envelope.json");
+    public void testEventEnvelopeBodyNoKey() throws Exception {
+        String expectedEnvelope = TestUtil.getFileAsString("event/event-envelope-no-key.json");
 
         ChampEvent body = ChampEvent.builder().entity(new ChampObject.Builder("pserver").build()).build();
 
@@ -46,8 +46,24 @@ public class ChampEventEnvelopeTest {
                 new CustomComparator(JSONCompareMode.STRICT, new Customization("header.request-id", (o1, o2) -> true),
                         new Customization("header.timestamp", (o1, o2) -> true),
                         new Customization("body.timestamp", (o1, o2) -> true),
-                        new Customization("body.transactionId", (o1, o2) -> true)));
+                        new Customization("body.transaction-id", (o1, o2) -> true)));
     }
+
+    @Test
+    public void testEventEnvelopeBodyWithKey() throws Exception {
+        String expectedEnvelope = TestUtil.getFileAsString("event/event-envelope-with-key.json");
+
+        ChampEvent body = ChampEvent.builder().entity(new ChampObject.Builder("pserver").key("1234").build()).build();
+
+        String envelope = new ChampEventEnvelope(body).toJson();
+
+        JSONAssert.assertEquals(expectedEnvelope, envelope,
+                new CustomComparator(JSONCompareMode.STRICT, new Customization("header.request-id", (o1, o2) -> true),
+                        new Customization("header.timestamp", (o1, o2) -> true),
+                        new Customization("body.timestamp", (o1, o2) -> true),
+                        new Customization("body.transaction-id", (o1, o2) -> true)));
+    }
+
 
     @Test
     public void testRequestIdIsTransactionId() throws Exception {

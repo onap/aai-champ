@@ -27,8 +27,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.onap.aai.champcore.event.envelope.util.GsonUtil;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
 public class ChampEventHeader {
@@ -70,7 +70,7 @@ public class ChampEventHeader {
     @SerializedName("entity-link")
     private String entityLink;
 
-    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+    private static final Gson gson = GsonUtil.createGson();
 
     public static class Builder {
 

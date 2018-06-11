@@ -22,9 +22,9 @@
 package org.onap.aai.champcore.event.envelope;
 
 import org.onap.aai.champcore.event.ChampEvent;
+import org.onap.aai.champcore.event.envelope.util.GsonUtil;
 import org.onap.aai.champcore.exceptions.ChampUnmarshallingException;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public class ChampEventEnvelope {
 
@@ -32,9 +32,9 @@ public class ChampEventEnvelope {
     private ChampEvent body;
 
     /**
-     * Marshaller/unmarshaller for converting to/from JSON.
+     * Serializer/deserializer for converting to/from JSON.
      */
-    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+    private static final Gson gson = GsonUtil.createGson();
 
     public ChampEventEnvelope(ChampEvent event) {
         this.header = new ChampEventHeader.Builder(ChampEventHeader.EventType.UPDATE_NOTIFICATION)

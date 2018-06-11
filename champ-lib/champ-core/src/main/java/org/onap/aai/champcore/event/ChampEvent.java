@@ -33,6 +33,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.annotations.SerializedName;
 
 
 public class ChampEvent {
@@ -45,12 +46,14 @@ public class ChampEvent {
 
     private ChampOperation operation;
     private long timestamp;
+    @SerializedName("transaction-id")
     private String transactionId = null;
     private ChampObject vertex = null;
     private ChampRelationship relationship = null;
     private ChampPartition partition = null;
     private ChampObjectIndex objectIndex = null;
     private ChampRelationshipIndex relationshipIndex = null;
+    @SerializedName("database-transaction-id")
     private String dbTransactionId = null;
 
 

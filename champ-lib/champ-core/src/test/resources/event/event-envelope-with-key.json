@@ -7,10 +7,10 @@
   },
   "body": {
     "timestamp": 1521564357772,
-    "transactionId": "bffbbf77-e6fc-4c5a-af02-2dbe1bef003f",
+    "transaction-id": "bffbbf77-e6fc-4c5a-af02-2dbe1bef003f",
     "vertex": {
       "type": "pserver",
-      "key": {},
+      "key": "1234",
       "properties": {}
     }
   }
