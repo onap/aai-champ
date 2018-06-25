@@ -41,125 +41,126 @@ import org.onap.aai.champcore.schema.ChampSchemaEnforcer;
 
 public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampGraph {
 
+	public static final String CANNOT_USE_CHAMP_API_AFTER_CALLING_SHUTDOWN = "Cannot use ChampAPI after calling shutdown()";
 	private ChampSchema schema = ChampSchema.emptySchema();
 
+	protected AbstractValidatingChampGraph(Map<String, Object> properties) {
+		super(properties);
+	}
 	protected abstract ChampSchemaEnforcer getSchemaEnforcer();
+
 	protected abstract boolean isShutdown();
 
 	/**
 	 * Updates an existing vertex in the graph data store.
 	 * <p>
-     * If a transaction context is not provided, then a transaction will be automatically 
+     * If a transaction context is not provided, then a transaction will be automatically
      * created and committed for this operation only, otherwise, the supplied transaction
-     * will be used and it will be up to the caller to commit the transaction at its 
+     * will be used and it will be up to the caller to commit the transaction at its
      * discretion.
      * <p>
-     * 
+     *
 	 * @param object      - The vertex to be updated in the graph data store.
 	 * @param transaction - Optional transaction context to perform the operation in.
-	 * 
+	 *
 	 * @return - The updated vertex, marshaled as a {@link ChampObject}
-	 * 
-	 * @throws ChampMarshallingException     - If the {@code relationship} is not able to be 
+	 *
+	 * @throws ChampMarshallingException     - If the {@code relationship} is not able to be
      *                                         marshalled into the backend representation
-	 * @throws ChampObjectNotExistsException - If {@link org.onap.aai.champcore.model.ChampObject#getKey} 
+	 * @throws ChampObjectNotExistsException - If {@link org.onap.aai.champcore.model.ChampObject#getKey}
      *                                         is not present or object not found in the graph
 	 */
-	protected abstract ChampObject doReplaceObject(ChampObject object, Optional<ChampTransaction> transaction) throws ChampMarshallingException, ChampObjectNotExistsException, ChampTransactionException, ChampTransactionException;
-	
-    /** 
+	protected abstract ChampObject doReplaceObject(ChampObject object, Optional<ChampTransaction> transaction) throws ChampMarshallingException, ChampObjectNotExistsException, ChampTransactionException;
+
+    /**
      * Creates or updates a vertex in the graph data store.
      * <p>
-     * If a transaction context is not provided, then a transaction will be automatically 
+     * If a transaction context is not provided, then a transaction will be automatically
      * created and committed for this operation only, otherwise, the supplied transaction
-     * will be used and it will be up to the caller to commit the transaction at its 
+     * will be used and it will be up to the caller to commit the transaction at its
      * discretion.
-     * 
+     *
 	 * @param object      - The vertex to be stored in the graph data store.
 	 * @param transaction - Optional transaction context to perform the operation in.
-	 * 
+	 *
 	 * @return - The vertex which was created, marshaled as a {@link ChampObject}
-	 * 
-     * @throws ChampMarshallingException     - If the {@code relationship} is not able to be 
+	 *
+     * @throws ChampMarshallingException     - If the {@code relationship} is not able to be
      *                                         marshaled into the back end representation
-     * @throws ChampObjectNotExistsException - If {@link org.onap.aai.champcore.model.ChampObject#getKey} 
+     * @throws ChampObjectNotExistsException - If {@link org.onap.aai.champcore.model.ChampObject#getKey}
      *                                         is not present or object not found in the graph
 	 */
 	protected abstract ChampObject doStoreObject(ChampObject object, Optional<ChampTransaction> transaction) throws ChampMarshallingException, ChampObjectNotExistsException, ChampTransactionException;
-	
+
 	/**
 	 * Replaces an edge in the graph data store.
      * <p>
-     * If a transaction context is not provided, then a transaction will be automatically 
+     * If a transaction context is not provided, then a transaction will be automatically
      * created and committed for this operation only, otherwise, the supplied transaction
-     * will be used and it will be up to the caller to commit the transaction at its 
+     * will be used and it will be up to the caller to commit the transaction at its
      * discretion.
-     * 
+     *
 	 * @param relationship - The edge to be replaced in the graph data store.
 	 * @param transaction  - Optional transaction context to perform the operation in.
-	 * 
+	 *
 	 * @return - The edge as it was replaced, marshaled as a {@link ChampRelationship}
-	 * 
-	 * @throws ChampUnmarshallingException         - If the edge which was created could not be 
+	 *
+	 * @throws ChampUnmarshallingException         - If the edge which was created could not be
      *                                               unmarshaled into a ChampObject
-	 * @throws ChampRelationshipNotExistsException - If {@link org.onap.aai.champcore.model.ChampRelationship#getKey}.isPresent() 
+	 * @throws ChampRelationshipNotExistsException - If {@link org.onap.aai.champcore.model.ChampRelationship#getKey}.isPresent()
      *                                               but the object cannot be found in the graph
-	 * @throws ChampMarshallingException           - If the {@code relationship} is not able to be 
+	 * @throws ChampMarshallingException           - If the {@code relationship} is not able to be
      *                                               marshaled into the back end representation
 	 */
 	protected abstract ChampRelationship doReplaceRelationship(ChampRelationship relationship, Optional<ChampTransaction> transaction) throws ChampUnmarshallingException, ChampRelationshipNotExistsException, ChampMarshallingException, ChampTransactionException;
-	
+
 	/**
 	 * Creates or updates a relationship in the graph data store.
      * <p>
-     * If a transaction context is not provided, then a transaction will be automatically 
+     * If a transaction context is not provided, then a transaction will be automatically
      * created and committed for this operation only, otherwise, the supplied transaction
-     * will be used and it will be up to the caller to commit the transaction at its 
+     * will be used and it will be up to the caller to commit the transaction at its
      * discretion.
-     *  
+     *
 	 * @param relationship - The relationship to be stored in the graph data store.
 	 * @param transaction  - Optional transaction context to perform the operation in.
-	 * 
+	 *
 	 * @return - The relationship that was stored.
-	 * 
-	 * @throws ChampUnmarshallingException         - If the edge which was created could not be 
+	 *
+	 * @throws ChampUnmarshallingException         - If the edge which was created could not be
      *                                               unmarshalled into a ChampObject
-	 * @throws ChampObjectNotExistsException       - If {@link org.onap.aai.champcore.model.ChampObject#getKey} 
+	 * @throws ChampObjectNotExistsException       - If {@link org.onap.aai.champcore.model.ChampObject#getKey}
      *                                               is not present or object not found in the graph
-	 * @throws ChampRelationshipNotExistsException - If {@link org.onap.aai.champcore.model.ChampRelationship#getKey}.isPresent() 
+	 * @throws ChampRelationshipNotExistsException - If {@link org.onap.aai.champcore.model.ChampRelationship#getKey}.isPresent()
    *                                                 but the object cannot be found in the graph
-	 * @throws ChampMarshallingException           - If the {@code relationship} is not able to be 
+	 * @throws ChampMarshallingException           - If the {@code relationship} is not able to be
      *                                               marshalled into the backend representation
 	 */
 	protected abstract ChampRelationship doStoreRelationship(ChampRelationship relationship, Optional<ChampTransaction> transaction) throws ChampUnmarshallingException, ChampObjectNotExistsException, ChampRelationshipNotExistsException, ChampMarshallingException, ChampTransactionException;
-		
+
 	/**
 	 * Creates or updates a partition in the graph data store.
-	 * 
+	 *
 	 * @param partition   - The partition to be stored in the graph data store.
 	 * @param transaction - Optional transaction context to perform the operation in.
-	 * 
+	 *
 	 * @return - The partition that was stored.
-	 * 
-	 * @throws ChampRelationshipNotExistsException - If {@link org.onap.aai.champcore.model.ChampRelationship#getKey}.isPresent() 
+	 *
+	 * @throws ChampRelationshipNotExistsException - If {@link org.onap.aai.champcore.model.ChampRelationship#getKey}.isPresent()
    *                                                 but the object cannot be found in the graph
-	 * @throws ChampMarshallingException           - If the {@code relationship} is not able to be 
+	 * @throws ChampMarshallingException           - If the {@code relationship} is not able to be
      *                                               marshalled into the backend representation
-	 * @throws ChampObjectNotExistsException       - If {@link org.onap.aai.champcore.model.ChampObject#getKey} 
+	 * @throws ChampObjectNotExistsException       - If {@link org.onap.aai.champcore.model.ChampObject#getKey}
      *                                               is not present or object not found in the graph
 	 */
 	protected abstract ChampPartition doStorePartition(ChampPartition partition, Optional<ChampTransaction> transaction) throws ChampRelationshipNotExistsException, ChampMarshallingException, ChampObjectNotExistsException, ChampTransactionException;
 
-	protected AbstractValidatingChampGraph(Map<String, Object> properties) {
-	  super(properties);
-	}
-	
 	@Override
 	public ChampObject executeStoreObject(ChampObject object, Optional<ChampTransaction> transaction)
 			throws ChampMarshallingException, ChampSchemaViolationException, ChampObjectNotExistsException, ChampTransactionException {
 	  
 	  if (isShutdown()) {
-	    throw new IllegalStateException("Cannot use ChampAPI after calling shutdown()");
+	    throw new IllegalStateException(CANNOT_USE_CHAMP_API_AFTER_CALLING_SHUTDOWN);
 	  }
 
       validate(object);
@@ -173,7 +174,7 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 			throws ChampMarshallingException, ChampSchemaViolationException, ChampObjectNotExistsException, ChampTransactionException {
 	  
 		if (isShutdown()) {
-		  throw new IllegalStateException("Cannot use ChampAPI after calling shutdown()");
+		  throw new IllegalStateException(CANNOT_USE_CHAMP_API_AFTER_CALLING_SHUTDOWN);
 		}
 
 		validate(object);
@@ -186,7 +187,7 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 			throws ChampUnmarshallingException, ChampMarshallingException, ChampObjectNotExistsException, ChampSchemaViolationException, ChampRelationshipNotExistsException, ChampTransactionException {	
 		
 	  if (isShutdown()) {
-	    throw new IllegalStateException("Cannot use ChampAPI after calling shutdown()");
+	    throw new IllegalStateException(CANNOT_USE_CHAMP_API_AFTER_CALLING_SHUTDOWN);
 	  }
 
 	  validate(relationship);
@@ -199,7 +200,7 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 			throws ChampUnmarshallingException, ChampMarshallingException, ChampSchemaViolationException, ChampRelationshipNotExistsException, ChampTransactionException {	
 		
 	  if (isShutdown()) {
-	    throw new IllegalStateException("Cannot use ChampAPI after calling shutdown()");
+	    throw new IllegalStateException(CANNOT_USE_CHAMP_API_AFTER_CALLING_SHUTDOWN);
 	  }
 
 	  validate(relationship);
@@ -211,7 +212,7 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 	public ChampPartition executeStorePartition(ChampPartition partition, Optional<ChampTransaction> transaction) throws ChampSchemaViolationException, ChampRelationshipNotExistsException, ChampMarshallingException, ChampObjectNotExistsException, ChampTransactionException {
 
 	  if (isShutdown()) {
-	    throw new IllegalStateException("Cannot use ChampAPI after calling shutdown()");
+	    throw new IllegalStateException(CANNOT_USE_CHAMP_API_AFTER_CALLING_SHUTDOWN);
 	  }
 
 	  validate(partition);
@@ -222,7 +223,8 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 	protected void validate(ChampObject object) throws ChampSchemaViolationException {
 		final Optional<ChampObjectConstraint> objectConstraint = retrieveSchema().getObjectConstraint(object.getType());
 
- 		if (objectConstraint.isPresent()) getSchemaEnforcer().validate(object, objectConstraint.get());
+ 		if (objectConstraint.isPresent())
+ 			getSchemaEnforcer().validate(object, objectConstraint.get());
 	}
 
 	protected void validate(ChampRelationship relationship) throws ChampSchemaViolationException {
@@ -231,9 +233,12 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 		final Optional<ChampObjectConstraint> sourceObjConstraint = graphSchema.getObjectConstraint(relationship.getSource().getType());
  		final Optional<ChampObjectConstraint> targetObjConstraint = graphSchema.getObjectConstraint(relationship.getTarget().getType());
 
- 		if (relationshipConstraint.isPresent()) getSchemaEnforcer().validate(relationship, relationshipConstraint.get());
-		if (sourceObjConstraint.isPresent()) getSchemaEnforcer().validate(relationship.getSource(), sourceObjConstraint.get());
-		if (targetObjConstraint.isPresent()) getSchemaEnforcer().validate(relationship.getTarget(), targetObjConstraint.get());
+ 		if (relationshipConstraint.isPresent())
+ 			getSchemaEnforcer().validate(relationship, relationshipConstraint.get());
+		if (sourceObjConstraint.isPresent())
+			getSchemaEnforcer().validate(relationship.getSource(), sourceObjConstraint.get());
+		if (targetObjConstraint.isPresent())
+			getSchemaEnforcer().validate(relationship.getTarget(), targetObjConstraint.get());
 	}
 
 	protected void validate(ChampPartition partition) throws ChampSchemaViolationException {
@@ -248,21 +253,24 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 
 	@Override
 	public void storeSchema(ChampSchema schema) throws ChampSchemaViolationException {
-		if (isShutdown()) throw new IllegalStateException("Cannot call storeSchema() after shutdown has been initiated");
+		if (isShutdown())
+			throw new IllegalStateException("Cannot call storeSchema() after shutdown has been initiated");
 
 		this.schema = schema;
 	}
 
 	@Override
 	public ChampSchema retrieveSchema() {
-		if (isShutdown()) throw new IllegalStateException("Cannot call retrieveSchema() after shutdown has been initiated");
+		if (isShutdown())
+			throw new IllegalStateException("Cannot call retrieveSchema() after shutdown has been initiated");
 
 		return schema;
 	}
 
 	@Override
 	public void updateSchema(ChampObjectConstraint objectConstraint) throws ChampSchemaViolationException {
-		if (isShutdown()) throw new IllegalStateException("Cannot call updateSchema() after shutdown has been initiated");
+		if (isShutdown())
+			throw new IllegalStateException("Cannot call updateSchema() after shutdown has been initiated");
 
 		final ChampSchema currentSchema = retrieveSchema();
 		final ChampSchema updatedSchema = new ChampSchema.Builder(currentSchema)
@@ -274,7 +282,8 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 
 	@Override
 	public void updateSchema(ChampRelationshipConstraint relationshipConstraint) throws ChampSchemaViolationException {
-		if (isShutdown()) throw new IllegalStateException("Cannot call updateSchema() after shutdown has been initiated");
+		if (isShutdown())
+			throw new IllegalStateException("Cannot call updateSchema() after shutdown has been initiated");
 
 		final ChampSchema currentSchema = retrieveSchema();
 		final ChampSchema updatedSchema = new ChampSchema.Builder(currentSchema)
@@ -286,7 +295,8 @@ public abstract class AbstractValidatingChampGraph extends AbstractLoggingChampG
 
 	@Override
 	public void deleteSchema() {
-		if (isShutdown()) throw new IllegalStateException("Cannot call deleteSchema() after shutdown has been initiated");
+		if (isShutdown())
+			throw new IllegalStateException("Cannot call deleteSchema() after shutdown has been initiated");
 		this.schema = ChampSchema.emptySchema();
 	}
 }
