@@ -33,7 +33,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.annotations.SerializedName;
 
 
 public class ChampEvent {
@@ -46,14 +45,12 @@ public class ChampEvent {
 
     private ChampOperation operation;
     private long timestamp;
-    @SerializedName("transaction-id")
     private String transactionId = null;
     private ChampObject vertex = null;
     private ChampRelationship relationship = null;
     private ChampPartition partition = null;
     private ChampObjectIndex objectIndex = null;
     private ChampRelationshipIndex relationshipIndex = null;
-    @SerializedName("database-transaction-id")
     private String dbTransactionId = null;
 
 
@@ -131,15 +128,11 @@ public class ChampEvent {
         return dbTransactionId;
     }
 
-
     public void setDbTransactionId(String id) {
         this.dbTransactionId = id;
     }
 
-
-
     public String toJson() {
-
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(Include.NON_NULL);
 
@@ -151,21 +144,18 @@ public class ChampEvent {
     }
 
     public static ChampEvent fromJson(String json) throws JsonParseException, JsonMappingException, IOException {
-
         mapper.setSerializationInclusion(Include.NON_NULL);
         return mapper.readValue(json, ChampEvent.class);
     }
 
     @Override
     public String toString() {
-
         return toJson();
     }
 
     public static class Builder {
 
         ChampEvent event = null;
-
 
         public Builder() {
             event = new ChampEvent();
@@ -201,9 +191,7 @@ public class ChampEvent {
             return this;
         }
 
-
         public ChampEvent build() {
-
             event.setTimestamp(System.currentTimeMillis());
 
             // Set a unique transaction id on this event that can be used by downstream entities

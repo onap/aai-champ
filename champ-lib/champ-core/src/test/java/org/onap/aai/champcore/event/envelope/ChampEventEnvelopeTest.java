@@ -26,17 +26,20 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.onap.aai.champcore.event.ChampEvent;
 import org.onap.aai.champcore.model.ChampObject;
+import org.onap.aai.champcore.model.ChampRelationship;
 import org.onap.aai.champcore.util.TestUtil;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class ChampEventEnvelopeTest {
 
     @Test
-    public void testEventEnvelopeBodyNoKey() throws Exception {
-        String expectedEnvelope = TestUtil.getFileAsString("event/event-envelope-no-key.json");
+    public void testVertexEventEnvelopeBodyNoKey() throws Exception {
+        String expectedEnvelope = TestUtil.getFileAsString("event/vertex-event-envelope-no-key.json");
 
         ChampEvent body = ChampEvent.builder().entity(new ChampObject.Builder("pserver").build()).build();
 
@@ -50,8 +53,8 @@ public class ChampEventEnvelopeTest {
     }
 
     @Test
-    public void testEventEnvelopeBodyWithKey() throws Exception {
-        String expectedEnvelope = TestUtil.getFileAsString("event/event-envelope-with-key.json");
+    public void testVertexEventEnvelopeBodyWithKey() throws Exception {
+        String expectedEnvelope = TestUtil.getFileAsString("event/vertex-event-envelope-with-key.json");
 
         ChampEvent body = ChampEvent.builder().entity(new ChampObject.Builder("pserver").key("1234").build()).build();
 
@@ -72,5 +75,30 @@ public class ChampEventEnvelopeTest {
         ChampEventEnvelope envelope = new ChampEventEnvelope(body);
 
         assertThat(envelope.getHeader().getRequestId(), is(envelope.getBody().getTransactionId()));
+    }
+
+    @Test
+    public void testEdgeEventEnvelope() throws Exception {
+        String expectedEnvelope = TestUtil.getFileAsString("event/edge-event-envelope.json");
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode objectNode = mapper.createObjectNode();
+        objectNode.put("inVertexId", 5678);
+        objectNode.put("typeId", 1000);
+        objectNode.put("relationId", 2000);
+        objectNode.put("outVertexId", 1234);
+
+        ChampRelationship relationship =
+                new ChampRelationship.Builder(new ChampObject.Builder("vserver").key("1234").build(),
+                        new ChampObject.Builder("pserver").key("5678").build(), "test").key(objectNode).build();
+        ChampEvent body = ChampEvent.builder().entity(relationship).build();
+
+        String envelope = new ChampEventEnvelope(body).toJson();
+
+        JSONAssert.assertEquals(expectedEnvelope, envelope,
+                new CustomComparator(JSONCompareMode.STRICT, new Customization("header.request-id", (o1, o2) -> true),
+                        new Customization("header.timestamp", (o1, o2) -> true),
+                        new Customization("body.timestamp", (o1, o2) -> true),
+                        new Customization("body.transaction-id", (o1, o2) -> true)));
     }
 }

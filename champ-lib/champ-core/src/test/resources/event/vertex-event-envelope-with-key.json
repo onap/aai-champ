@@ -1,0 +1,19 @@
+{
+    "header": {
+        "timestamp": "20180625T105153Z",
+        "request-id": "013c787f-86e1-42d2-a4f7-e736ed7e6c60",
+        "source-name": "CHAMP",
+        "event-type": "update-notification-raw"
+    },
+    "body": {
+        "timestamp": 1529923913318,
+        "vertex": {
+            "type": "pserver",
+            "properties": {},
+            "object": true,
+            "relationship": false,
+            "key": "1234"
+        },
+        "transaction-id": "013c787f-86e1-42d2-a4f7-e736ed7e6c60"
+    }
+}

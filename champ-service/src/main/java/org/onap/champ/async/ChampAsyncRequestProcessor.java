@@ -29,7 +29,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import javax.naming.OperationNotSupportedException;
 import javax.ws.rs.core.Response.Status;
 import org.onap.aai.champcore.ChampTransaction;
-import org.onap.aai.champcore.event.envelope.ChampEventHeader;
 import org.onap.aai.cl.api.Logger;
 import org.onap.aai.cl.eelf.LoggerFactory;
 import org.onap.aai.event.api.EventConsumer;
@@ -39,6 +38,7 @@ import org.onap.champ.event.GraphEvent.GraphEventResult;
 import org.onap.champ.event.GraphEventEdge;
 import org.onap.champ.event.GraphEventVertex;
 import org.onap.champ.event.envelope.GraphEventEnvelope;
+import org.onap.champ.event.envelope.GraphEventHeader;
 import org.onap.champ.exception.ChampServiceException;
 import org.onap.champ.service.ChampDataService;
 import org.onap.champ.service.ChampThreadFactory;
@@ -159,7 +159,7 @@ public class ChampAsyncRequestProcessor extends TimerTask {
                 }
 
                 // Apply Champ Event header
-                eventEnvelope.setHeader(new ChampEventHeader.Builder(ChampEventHeader.EventType.UPDATE_RESULT).requestId(event.getTransactionId()).build());
+                eventEnvelope.setHeader(new GraphEventHeader.Builder().requestId(event.getTransactionId()).build());
 
                 // Parse the event and call champ Dao to process , Create the
                 // response event and put it on response queue

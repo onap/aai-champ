@@ -2,8 +2,8 @@
  * ============LICENSE_START==========================================
  * org.onap.aai
  * ===================================================================
- * Copyright © 2017 AT&T Intellectual Property. All rights reserved.
- * Copyright © 2017 Amdocs
+ * Copyright Â© 2017 AT&T Intellectual Property. All rights reserved.
+ * Copyright Â© 2017 Amdocs
  * ===================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
  * ============LICENSE_END============================================
  * ECOMP is a trademark and service mark of AT&T Intellectual Property.
  */
-package org.onap.aai.champcore.event.envelope;
+package org.onap.champ.event.envelope;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -27,62 +27,48 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 
-public class ChampEventHeader {
+public class GraphEventHeader {
 
     private static final String SOURCE_NAME = "CHAMP";
 
-    public enum EventType {
-        UPDATE_RESULT("update-result"),
-        UPDATE_NOTIFICATION("update-notification-raw");
+    private static final String EVENT_TYPE = "update-result";
 
-        private final String name;
-
-        EventType(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
-    @JsonProperty("request-id")
+    @SerializedName("request-id")
     private String requestId;
 
     private String timestamp;
 
-    @JsonProperty("source-name")
+    @SerializedName("source-name")
     private String sourceName;
 
-    @JsonProperty("event-type")
+    @SerializedName("event-type")
     private String eventType;
 
-    @JsonProperty("validation-entity-type")
+    @SerializedName("validation-entity-type")
     private String validationEntityType;
 
-    @JsonProperty("validation-top-entity-type")
+    @SerializedName("validation-top-entity-type")
     private String validationTopEntityType;
 
-    @JsonProperty("entity-link")
+    @SerializedName("entity-link")
     private String entityLink;
 
-    public static class Builder {
+    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
-        private final EventType eventType;
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
 
         private String requestId;
         private String validationEntityType;
         private String validationTopEntityType;
         private String entityLink;
-
-        public Builder(EventType eventType) {
-            this.eventType = eventType;
-        }
 
         public Builder requestId(String val) {
             requestId = val;
@@ -104,16 +90,16 @@ public class ChampEventHeader {
             return this;
         }
 
-        public ChampEventHeader build() {
-            return new ChampEventHeader(this);
+        public GraphEventHeader build() {
+            return new GraphEventHeader(this);
         }
     }
 
-    private ChampEventHeader(Builder builder) {
+    private GraphEventHeader(Builder builder) {
         requestId = builder.requestId != null ? builder.requestId : UUID.randomUUID().toString();
         timestamp = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssX").withZone(ZoneOffset.UTC).format(Instant.now());
         sourceName = SOURCE_NAME;
-        eventType = builder.eventType.getName();
+        eventType = EVENT_TYPE;
 
         validationEntityType = builder.validationEntityType;
         validationTopEntityType = builder.validationTopEntityType;
@@ -126,14 +112,7 @@ public class ChampEventHeader {
      * @return a JSON format string representation of this object.
      */
     public String toJson() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(Include.NON_NULL);
-
-        try {
-            return mapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            return "Unmarshallable: " + e.getMessage();
-        }
+        return gson.toJson(this);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -218,12 +197,12 @@ public class ChampEventHeader {
      */
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof ChampEventHeader)) {
+        if (!(obj instanceof GraphEventHeader)) {
             return false;
         } else if (obj == this) {
             return true;
         }
-        ChampEventHeader rhs = (ChampEventHeader) obj;
+        GraphEventHeader rhs = (GraphEventHeader) obj;
      // @formatter:off
      return new EqualsBuilder()
                   .append(requestId, rhs.requestId)

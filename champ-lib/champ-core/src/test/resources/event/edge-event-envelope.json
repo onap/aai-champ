@@ -1,0 +1,33 @@
+{
+    "header": {
+        "timestamp": "20180625T131609Z",
+        "request-id": "ad65331f-932e-4cce-acc5-97ad88ce0483",
+        "source-name": "CHAMP",
+        "event-type": "update-notification-raw"
+    },
+    "body": {
+        "timestamp": 1529932568889,
+        "relationship": {
+            "type": "test",
+            "properties": {},
+            "source": {
+                "type": "vserver",
+                "properties": {},
+                "object": true,
+                "relationship": false,
+                "key": "1234"
+            },
+            "target": {
+                "type": "pserver",
+                "properties": {},
+                "object": true,
+                "relationship": false,
+                "key": "5678"
+            },
+            "object": false,
+            "relationship": true,
+            "key": "{\"inVertexId\":5678,\"typeId\":1000,\"relationId\":2000,\"outVertexId\":1234}"
+        },
+        "transaction-id": "ad65331f-932e-4cce-acc5-97ad88ce0483"
+    }
+}

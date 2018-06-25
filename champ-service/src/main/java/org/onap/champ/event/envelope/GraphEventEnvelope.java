@@ -22,7 +22,6 @@
 package org.onap.champ.event.envelope;
 
 import javax.ws.rs.core.Response.Status;
-import org.onap.aai.champcore.event.envelope.ChampEventHeader;
 import org.onap.champ.event.GraphEvent;
 import org.onap.champ.exception.ChampServiceException;
 import com.google.gson.Gson;
@@ -30,7 +29,7 @@ import com.google.gson.GsonBuilder;
 
 public class GraphEventEnvelope {
 
-    private ChampEventHeader header;
+    private GraphEventHeader header;
     private GraphEvent body;
 
     /**
@@ -39,21 +38,20 @@ public class GraphEventEnvelope {
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
     public GraphEventEnvelope(GraphEvent event) {
-        this.header = new ChampEventHeader.Builder(ChampEventHeader.EventType.UPDATE_RESULT)
-                .requestId(event.getTransactionId()).build();
+        this.header = new GraphEventHeader.Builder().requestId(event.getTransactionId()).build();
         this.body = event;
     }
 
-    public GraphEventEnvelope(ChampEventHeader header, GraphEvent body) {
+    public GraphEventEnvelope(GraphEventHeader header, GraphEvent body) {
         this.header = header;
         this.body = body;
     }
 
-    public ChampEventHeader getHeader() {
+    public GraphEventHeader getHeader() {
         return header;
     }
 
-    public void setHeader(ChampEventHeader header) {
+    public void setHeader(GraphEventHeader header) {
         this.header = header;
     }
 

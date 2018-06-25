@@ -1,0 +1,19 @@
+{
+    "header": {
+        "request-id": "d9b95d97-ac49-4425-8700-a704fa9fc88b",
+        "timestamp": "20180625T100903Z",
+        "source-name": "CHAMP",
+        "event-type": "update-notification-raw"
+    },
+    "body": {
+        "timestamp": 1529921297261,
+        "vertex": {
+            "type": "pserver",
+            "properties": {},
+            "object": true,
+            "relationship": false,
+            "key": ""
+        },
+        "transaction-id": "d9b95d97-ac49-4425-8700-a704fa9fc88b"
+    }
+}

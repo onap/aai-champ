@@ -22,19 +22,14 @@
 package org.onap.aai.champcore.event.envelope;
 
 import org.onap.aai.champcore.event.ChampEvent;
-import org.onap.aai.champcore.event.envelope.util.GsonUtil;
-import org.onap.aai.champcore.exceptions.ChampUnmarshallingException;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ChampEventEnvelope {
 
     private ChampEventHeader header;
     private ChampEvent body;
-
-    /**
-     * Serializer/deserializer for converting to/from JSON.
-     */
-    private static final Gson gson = GsonUtil.createGson();
 
     public ChampEventEnvelope(ChampEvent event) {
         this.header = new ChampEventHeader.Builder(ChampEventHeader.EventType.UPDATE_NOTIFICATION)
@@ -69,24 +64,13 @@ public class ChampEventEnvelope {
      * @return - A JSON format string representation of this Vertex.
      */
     public String toJson() {
-        return gson.toJson(this);
-    }
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(Include.NON_NULL);
 
-    /**
-     * Deserializes the provided JSON string into a Event Envelope object.
-     *
-     * @param json the JSON string to produce the Event Envelope from.
-     * @return an Event Envelope object.
-     * @throws ChampUnmarshallingException
-     */
-    public static ChampEventEnvelope fromJson(String json) throws ChampUnmarshallingException {
         try {
-            if (json == null || json.isEmpty()) {
-                throw new ChampUnmarshallingException("Empty or null JSON string.");
-            }
-            return gson.fromJson(json, ChampEventEnvelope.class);
-        } catch (Exception ex) {
-            throw new ChampUnmarshallingException("Unable to parse JSON string: ");
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "Unmarshallable: " + e.getMessage();
         }
     }
 
