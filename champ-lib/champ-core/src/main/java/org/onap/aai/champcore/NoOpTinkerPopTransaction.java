@@ -22,21 +22,18 @@ package org.onap.aai.champcore;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.onap.aai.champcore.graph.impl.TinkerpopTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class NoOpTinkerPopTransaction extends TinkerpopTransaction {
     
     protected Graph graph;
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoOpTinkerPopTransaction.class);
 
-    
+
     public NoOpTinkerPopTransaction(Graph aGraphInstance) {
       
       this.graph = aGraphInstance;
     }
-    
+
+    @Override
     public Graph getGraphInstance() {
       return graph;
     }
