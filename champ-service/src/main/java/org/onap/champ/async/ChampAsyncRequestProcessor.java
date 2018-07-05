@@ -187,7 +187,7 @@ public class ChampAsyncRequestProcessor extends TimerTask {
 
                                 case UPDATE:
                                     event.setVertex(GraphEventVertex.fromChampObject(
-                                            champDataService.replaceObject(event.getVertex().toChampObject(),
+                                            champDataService.replaceObject(event.getVertex().toChampObject(event.getVertex().toJson()),
                                                     event.getVertex().getId(), Optional.ofNullable(transaction)),
                                             event.getVertex().getModelVersion()));
                                     break;

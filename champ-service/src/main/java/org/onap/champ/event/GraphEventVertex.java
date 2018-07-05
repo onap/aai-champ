@@ -20,13 +20,14 @@
  */
 package org.onap.champ.event;
 
+import java.io.IOException;
 import java.util.Map;
-
 import javax.ws.rs.core.Response.Status;
-
 import org.onap.aai.champcore.model.ChampObject;
+import org.onap.champ.entity.ChampObjectDeserializer;
 import org.onap.champ.exception.ChampServiceException;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -160,7 +161,7 @@ public class GraphEventVertex {
     return graphEventVertex;
 
   }
-  
+
 
   public ChampObject toChampObject() {
     ChampObject.Builder builder = new ChampObject.Builder(this.getType());
@@ -179,5 +180,21 @@ public class GraphEventVertex {
     return builder.build();
 
   }
+
+  /**
+   * Uses jackson api to convert the json string into a ChampObject.
+   *
+   * @param json
+   * @return
+   * @throws IOException
+   */
+  // Added this method as gson conversion of timestamp properties(create ts and modified ts) differs from the jackson conversion causing failures.
+  public ChampObject toChampObject(String json) throws IOException {
+      ObjectMapper mapper = new ObjectMapper();
+      SimpleModule module = new SimpleModule();
+      module.addDeserializer(ChampObject.class, new ChampObjectDeserializer());
+      mapper.registerModule(module);
+      return mapper.readValue(json, ChampObject.class);
+    }
 
 }
