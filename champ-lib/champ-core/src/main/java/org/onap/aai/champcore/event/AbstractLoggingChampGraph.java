@@ -398,7 +398,10 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
 
       try {
         publisherPool.awaitTermination(1000, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {}
+      } catch (InterruptedException e) {
+        logger.warn("Termination interrupted");
+        Thread.currentThread().interrupt();
+      }
     }
 
     if(producer != null) {
