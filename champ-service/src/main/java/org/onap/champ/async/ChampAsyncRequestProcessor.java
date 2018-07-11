@@ -153,108 +153,109 @@ public class ChampAsyncRequestProcessor extends TimerTask {
                     // Get the next event to be published from the queue.
                     eventEnvelope = requestProcesserEventQueue.take();
                     event = eventEnvelope.getBody();
+
+                    // Apply Champ Event header
+                    eventEnvelope.setHeader(new GraphEventHeader.Builder().requestId(event.getTransactionId()).build());
+
+                    // Parse the event and call champ Dao to process , Create the
+                    // response event and put it on response queue
+                    event.setResult(GraphEventResult.SUCCESS);
+
+                    // Check if this request is part of an ongoing DB transaction
+                    ChampTransaction transaction = champDataService.getTransaction(event.getDbTransactionId());
+                    if ((event.getDbTransactionId() != null) && (transaction == null)) {
+                        event.setResult(GraphEventResult.FAILURE);
+                        event.setErrorMessage("Database transactionId " + event.getDbTransactionId() + " not found");
+                        event.setHttpErrorStatus(Status.BAD_REQUEST);
+                    }
+
+                    if (event.getResult() != GraphEventResult.FAILURE) {
+                        try {
+                            if (event.getVertex() != null) {
+
+                                switch (event.getOperation()) {
+                                    case CREATE:
+                                        event.setVertex(GraphEventVertex.fromChampObject(
+                                            champDataService.storeObject(event.getVertex().toChampObject(),
+                                                Optional.ofNullable(transaction)),
+                                            event.getVertex().getModelVersion()));
+                                        break;
+
+                                    case UPDATE:
+                                        event.setVertex(GraphEventVertex.fromChampObject(
+                                            champDataService.replaceObject(
+                                                event.getVertex().toChampObject(event.getVertex().toJson()),
+                                                event.getVertex().getId(), Optional.ofNullable(transaction)),
+                                            event.getVertex().getModelVersion()));
+                                        break;
+                                    case DELETE:
+                                        champDataService.deleteObject(event.getVertex().getId(),
+                                            Optional.ofNullable(transaction));
+                                        break;
+                                    default:
+                                        // log error
+                                }
+                            } else if (event.getEdge() != null) {
+                                switch (event.getOperation()) {
+                                    case CREATE:
+                                        event.setEdge(GraphEventEdge.fromChampRelationship(
+                                            champDataService.storeRelationship(event.getEdge().toChampRelationship(),
+                                                Optional.ofNullable(transaction)),
+                                            event.getEdge().getModelVersion()));
+                                        break;
+
+                                    case UPDATE:
+                                        event.setEdge(GraphEventEdge.fromChampRelationship(
+                                            champDataService.updateRelationship(event.getEdge().toChampRelationship(),
+                                                event.getEdge().getId(), Optional.ofNullable(transaction)),
+                                            event.getEdge().getModelVersion()));
+
+                                        break;
+                                    case DELETE:
+                                        champDataService.deleteRelationship(event.getEdge().getId(),
+                                            Optional.ofNullable(transaction));
+                                        break;
+                                    default:
+                                        logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR,
+                                            "Invalid operation for event transactionId: " + event.getTransactionId());
+                                }
+
+                            } else {
+                                logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR,
+                                    "Invalid payload for event transactionId: " + event.getTransactionId());
+                            }
+                        } catch (ChampServiceException champException) {
+                            logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR, champException.getMessage());
+                            event.setResult(GraphEventResult.FAILURE);
+                            event.setErrorMessage(champException.getMessage());
+                            event.setHttpErrorStatus(champException.getHttpStatus());
+
+                        } catch (Exception ex) {
+                            logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR, ex.getMessage());
+                            event.setResult(GraphEventResult.FAILURE);
+                            event.setErrorMessage(ex.getMessage());
+                            event.setHttpErrorStatus(Status.INTERNAL_SERVER_ERROR);
+                        }
+                    }
+
+                    if (event.getResult().equals(GraphEventResult.SUCCESS)) {
+                        logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO,
+                            "Event processed of type: " + event.getObjectType() + " with key: " + event.getObjectKey()
+                                + " , transaction-id: " + event.getTransactionId() + " , operation: "
+                                + event.getOperation().toString() + " , result: " + event.getResult());
+                    } else {
+                        logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO,
+                            "Event processed of type: " + event.getObjectType() + " with key: " + event.getObjectKey()
+                                + " , transaction-id: " + event.getTransactionId() + " , operation: "
+                                + event.getOperation().toString() + " , result: " + event.getResult() + " , error: "
+                                + event.getErrorMessage());
+                    }
+
+                    champAsyncResponsePublisher.publishResponseEvent(eventEnvelope);
                 } catch (InterruptedException e) {
                     // Restore the interrupted status.
                     Thread.currentThread().interrupt();
                 }
-
-                // Apply Champ Event header
-                eventEnvelope.setHeader(new GraphEventHeader.Builder().requestId(event.getTransactionId()).build());
-
-                // Parse the event and call champ Dao to process , Create the
-                // response event and put it on response queue
-                event.setResult(GraphEventResult.SUCCESS);
-
-                // Check if this request is part of an ongoing DB transaction
-                ChampTransaction transaction = champDataService.getTransaction(event.getDbTransactionId());
-                if ((event.getDbTransactionId() != null) && (transaction == null)) {
-                    event.setResult(GraphEventResult.FAILURE);
-                    event.setErrorMessage("Database transactionId " + event.getDbTransactionId() + " not found");
-                    event.setHttpErrorStatus(Status.BAD_REQUEST);
-                }
-
-                if (event.getResult() != GraphEventResult.FAILURE) {
-                    try {
-                        if (event.getVertex() != null) {
-
-                            switch (event.getOperation()) {
-                                case CREATE:
-                                    event.setVertex(GraphEventVertex.fromChampObject(
-                                            champDataService.storeObject(event.getVertex().toChampObject(),
-                                                    Optional.ofNullable(transaction)),
-                                            event.getVertex().getModelVersion()));
-                                    break;
-
-                                case UPDATE:
-                                    event.setVertex(GraphEventVertex.fromChampObject(
-                                            champDataService.replaceObject(event.getVertex().toChampObject(event.getVertex().toJson()),
-                                                    event.getVertex().getId(), Optional.ofNullable(transaction)),
-                                            event.getVertex().getModelVersion()));
-                                    break;
-                                case DELETE:
-                                    champDataService.deleteObject(event.getVertex().getId(),
-                                            Optional.ofNullable(transaction));
-                                    break;
-                                default:
-                                    // log error
-                            }
-                        } else if (event.getEdge() != null) {
-                            switch (event.getOperation()) {
-                                case CREATE:
-                                    event.setEdge(GraphEventEdge.fromChampRelationship(
-                                            champDataService.storeRelationship(event.getEdge().toChampRelationship(),
-                                                    Optional.ofNullable(transaction)),
-                                            event.getEdge().getModelVersion()));
-                                    break;
-
-                                case UPDATE:
-                                    event.setEdge(GraphEventEdge.fromChampRelationship(
-                                            champDataService.updateRelationship(event.getEdge().toChampRelationship(),
-                                                    event.getEdge().getId(), Optional.ofNullable(transaction)),
-                                            event.getEdge().getModelVersion()));
-
-                                    break;
-                                case DELETE:
-                                    champDataService.deleteRelationship(event.getEdge().getId(),
-                                            Optional.ofNullable(transaction));
-                                    break;
-                                default:
-                                    logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR,
-                                            "Invalid operation for event transactionId: " + event.getTransactionId());
-                            }
-
-                        } else {
-                            logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR,
-                                    "Invalid payload for event transactionId: " + event.getTransactionId());
-                        }
-                    } catch (ChampServiceException champException) {
-                        logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR, champException.getMessage());
-                        event.setResult(GraphEventResult.FAILURE);
-                        event.setErrorMessage(champException.getMessage());
-                        event.setHttpErrorStatus(champException.getHttpStatus());
-
-                    } catch (Exception ex) {
-                        logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR, ex.getMessage());
-                        event.setResult(GraphEventResult.FAILURE);
-                        event.setErrorMessage(ex.getMessage());
-                        event.setHttpErrorStatus(Status.INTERNAL_SERVER_ERROR);
-                    }
-                }
-
-                if (event.getResult().equals(GraphEventResult.SUCCESS)) {
-                    logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO,
-                            "Event processed of type: " + event.getObjectType() + " with key: " + event.getObjectKey()
-                                    + " , transaction-id: " + event.getTransactionId() + " , operation: "
-                                    + event.getOperation().toString() + " , result: " + event.getResult());
-                } else {
-                    logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO,
-                            "Event processed of type: " + event.getObjectType() + " with key: " + event.getObjectKey()
-                                    + " , transaction-id: " + event.getTransactionId() + " , operation: "
-                                    + event.getOperation().toString() + " , result: " + event.getResult() + " , error: "
-                                    + event.getErrorMessage());
-                }
-
-                champAsyncResponsePublisher.publishResponseEvent(eventEnvelope);
 
             }
         }
@@ -281,30 +282,30 @@ public class ChampAsyncRequestProcessor extends TimerTask {
         if (events == null || !events.iterator().hasNext()) {
             logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO, "No events recieved");
 
-        }
-
-        for (String event : events) {
-            try {
-                GraphEventEnvelope requestEnvelope = GraphEventEnvelope.fromJson(event);
-                GraphEvent requestEvent = requestEnvelope.getBody();
-                auditLogger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO,
+        } else {
+            for (String event : events) {
+                try {
+                    GraphEventEnvelope requestEnvelope = GraphEventEnvelope.fromJson(event);
+                    GraphEvent requestEvent = requestEnvelope.getBody();
+                    auditLogger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO,
                         "Event received of type: " + requestEvent.getObjectType() + " with key: "
-                                + requestEvent.getObjectKey() + " , transaction-id: " + requestEvent.getTransactionId()
-                                + " , operation: " + requestEvent.getOperation().toString());
-                logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO,
+                            + requestEvent.getObjectKey() + " , transaction-id: " + requestEvent.getTransactionId()
+                            + " , operation: " + requestEvent.getOperation().toString());
+                    logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO,
                         "Event received of type: " + requestEvent.getObjectType() + " with key: "
-                                + requestEvent.getObjectKey() + " , transaction-id: " + requestEvent.getTransactionId()
-                                + " , operation: " + requestEvent.getOperation().toString());
-                logger.debug(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO, "Event received with payload:" + event);
+                            + requestEvent.getObjectKey() + " , transaction-id: " + requestEvent.getTransactionId()
+                            + " , operation: " + requestEvent.getOperation().toString());
+                    logger.debug(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO, "Event received with payload:" + event);
 
-                // Try to submit the event to be published to the event bus.
-                if (!requestProcesserEventQueue.offer(requestEnvelope)) {
-                    logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR,
+                    // Try to submit the event to be published to the event bus.
+                    if (!requestProcesserEventQueue.offer(requestEnvelope)) {
+                        logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR,
                             "Event could not be published to the event bus due to: Internal buffer capacity exceeded.");
-                }
+                    }
 
-            } catch (Exception e) {
-                logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR, e.getMessage());
+                } catch (Exception e) {
+                    logger.error(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_ERROR, e.getMessage());
+                }
             }
         }
 
