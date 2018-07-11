@@ -383,6 +383,7 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
       }
     } catch (InterruptedException e) {
       LOGGER.warn("Interrupted while waiting for object index creation status");
+      Thread.currentThread().interrupt();
       return;
     }
 
@@ -394,6 +395,7 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
       updateIndexMgmt.commit();
     } catch (InterruptedException e) {
       LOGGER.warn("Interrupted while reindexing for object index");
+      Thread.currentThread().interrupt();
       return;
     } catch (ExecutionException e) {
       LOGGER.warn("Exception occurred during reindexing procedure for creating object index " + indexName, e);
@@ -406,6 +408,7 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
           .call();
     } catch (InterruptedException e) {
       LOGGER.warn("Interrupted while waiting for index to transition to ENABLED state");
+      Thread.currentThread().interrupt();
       return;
     }
   }

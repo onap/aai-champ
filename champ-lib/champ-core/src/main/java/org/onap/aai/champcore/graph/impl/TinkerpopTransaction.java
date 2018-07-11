@@ -108,7 +108,7 @@ public class TinkerpopTransaction extends ChampTransaction {
         } catch (InterruptedException ie) {
 
           LOGGER.info("Interrupted while backing off on transaction commit");
-          Thread.interrupted();
+          Thread.currentThread().interrupt();
           return;
         }
       }
@@ -153,7 +153,7 @@ public class TinkerpopTransaction extends ChampTransaction {
         } catch (InterruptedException ie) {
 
           LOGGER.info("Interrupted while backing off on transaction rollback");
-          Thread.interrupted();
+          Thread.currentThread().interrupt();
           return;
         }
       }
