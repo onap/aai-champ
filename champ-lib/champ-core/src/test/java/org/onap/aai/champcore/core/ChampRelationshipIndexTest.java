@@ -20,20 +20,27 @@
  */
 package org.onap.aai.champcore.core;
 
-import org.junit.Test;
-import org.onap.aai.champcore.ChampAPI;
-import org.onap.aai.champcore.ChampGraph;
-import org.onap.aai.champcore.exceptions.*;
-import org.onap.aai.champcore.model.ChampField;
-import org.onap.aai.champcore.model.ChampRelationship;
-import org.onap.aai.champcore.model.ChampRelationshipIndex;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.onap.aai.champcore.ChampAPI;
+import org.onap.aai.champcore.ChampGraph;
+import org.onap.aai.champcore.exceptions.ChampIndexNotExistsException;
+import org.onap.aai.champcore.exceptions.ChampMarshallingException;
+import org.onap.aai.champcore.exceptions.ChampObjectNotExistsException;
+import org.onap.aai.champcore.exceptions.ChampRelationshipNotExistsException;
+import org.onap.aai.champcore.exceptions.ChampSchemaViolationException;
+import org.onap.aai.champcore.exceptions.ChampTransactionException;
+import org.onap.aai.champcore.exceptions.ChampUnmarshallingException;
+import org.onap.aai.champcore.model.ChampField;
+import org.onap.aai.champcore.model.ChampRelationship;
+import org.onap.aai.champcore.model.ChampRelationshipIndex;
 
 public class ChampRelationshipIndexTest extends BaseChampAPITest {
 
@@ -175,4 +182,29 @@ public class ChampRelationshipIndexTest extends BaseChampAPITest {
     assertTrue(relationshipIndex.getType().equals("foo"));
     assertTrue(relationshipIndex.getField().getName().equals("name"));
   }
+
+
+      @Test
+    public void verifyEqualsAndHashCodeMethods(){
+        ChampField champField1 = new ChampField.Builder("name").build();
+        ChampField champField2 = new ChampField.Builder("differentName").build();
+        ChampRelationshipIndex obj1 = new ChampRelationshipIndex.Builder("name","type",champField1).build();
+        ChampRelationshipIndex obj2 = new ChampRelationshipIndex.Builder("name","type",champField1).build();
+        ChampRelationshipIndex obj3 = new ChampRelationshipIndex.Builder("name","type",champField1).build();
+        ChampRelationshipIndex obj4 = new ChampRelationshipIndex.Builder("name","type",champField2).build();
+
+
+        // if
+        assertEquals(obj1, obj2);
+        assertEquals(obj1.hashCode(), obj2.hashCode());
+        //and
+        assertEquals(obj1, obj3);
+        assertEquals(obj1.hashCode(), obj3.hashCode());
+        //then
+        assertEquals(obj2, obj3);
+        assertEquals(obj2.hashCode(), obj3.hashCode());
+
+        assertNotEquals(obj1, obj4);
+        assertNotEquals(obj1.hashCode(), obj4.hashCode());
+    }
 }

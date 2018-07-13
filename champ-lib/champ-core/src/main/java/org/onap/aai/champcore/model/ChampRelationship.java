@@ -23,6 +23,7 @@ package org.onap.aai.champcore.model;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.onap.aai.champcore.model.fluent.relationship.CreateChampRelationshipable;
@@ -149,6 +150,11 @@ public final class ChampRelationship implements ChampElement {
 		}
 		
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(getKey());
 	}
 
 	@Override

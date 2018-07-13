@@ -27,6 +27,7 @@ import org.onap.aai.champcore.ChampTransaction;
 import org.onap.aai.champcore.exceptions.*;
 import org.onap.aai.champcore.model.ChampObject;
 import org.onap.aai.champcore.model.ChampRelationship;
+import org.onap.aai.champcore.model.ChampRelationship.Builder;
 import org.onap.aai.champcore.model.ChampRelationship.ReservedPropertyKeys;
 import org.onap.aai.champcore.model.ChampRelationship.ReservedTypes;
 
@@ -36,6 +37,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ChampRelationshipTest extends BaseChampAPITest {
@@ -276,6 +279,30 @@ public class ChampRelationshipTest extends BaseChampAPITest {
     for (ReservedTypes type : ChampRelationship.ReservedTypes.values()) {
       assertTrue(ChampRelationship.ReservedTypes.valueOf(type.name()) == type);
     }
+  }
+
+  @Test
+  public void verifyEqualsAndHashCodeMethods() {
+    ChampObject source = new ChampObject.Builder("type").build();
+    ChampObject target = new ChampObject.Builder("type").build();
+    ChampRelationship champRelationship = new Builder(source, target, "type").key("someKey").build();
+    ChampRelationship obj1 = new Builder(champRelationship).key("someKey").build();
+    ChampRelationship obj2 = new Builder(champRelationship).key("someKey").build();
+    ChampRelationship obj3 = new Builder(champRelationship).key("someKey").build();
+    ChampRelationship obj4 = new Builder(champRelationship).key("differentKey").build();
+
+    // if
+    assertEquals(obj1, obj2);
+    assertEquals(obj1.hashCode(), obj2.hashCode());
+    //and
+    assertEquals(obj1, obj3);
+    assertEquals(obj1.hashCode(), obj3.hashCode());
+    //then
+    assertEquals(obj2, obj3);
+    assertEquals(obj2.hashCode(), obj3.hashCode());
+
+    assertNotEquals(obj1, obj4);
+    assertNotEquals(obj1.hashCode(), obj4.hashCode());
   }
   
   public static ChampTransaction getTransaction() {
