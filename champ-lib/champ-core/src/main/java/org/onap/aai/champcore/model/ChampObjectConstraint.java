@@ -23,6 +23,7 @@ package org.onap.aai.champcore.model;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -88,6 +89,10 @@ public final class ChampObjectConstraint {
 
 	@Override
 	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		}
+
 		if (o instanceof ChampObjectConstraint) {
 			final ChampObjectConstraint objectConstraint = (ChampObjectConstraint) o;
 
@@ -95,6 +100,11 @@ public final class ChampObjectConstraint {
 		}
 		
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(getType());
 	}
 
 	@Override

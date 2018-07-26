@@ -20,6 +20,7 @@
  */
 package org.onap.aai.champcore.model;
 
+import java.util.Objects;
 import org.onap.aai.champcore.model.fluent.index.CreateObjectIndexable;
 import org.onap.aai.champcore.model.fluent.index.impl.CreateObjectIndexableImpl;
 
@@ -82,5 +83,10 @@ public final class ChampObjectIndex {
 		}
 		
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getName(), getField().getName());
 	}
 }
