@@ -282,10 +282,19 @@ public class ChampRESTAPI {
     long startTimeInMs = System.currentTimeMillis();
     List<ChampRelationship> retrieved;
     Response response = null;
-    ChampTransaction transaction = null;
+    logger.info(ChampMsgs.INCOMING_REQUEST, tId, oId);
     try {
       httpHeadersValidator.validateRequestHeaders(headers);
+      ChampTransaction transaction = tId == null ? null : champDataService.getTransaction(tId);
+
+      if (transaction == null) {
+        throw new ChampServiceException("No transaction found for transaction ID: " + tId, Status.BAD_REQUEST);
+      }
       retrieved = champDataService.getRelationshipsByObject(oId, Optional.ofNullable(transaction));
+      if (retrieved == null) {
+        response = Response.status(Status.NOT_FOUND).entity(oId + " not found").build();
+        return response;
+      }
       EntityTag eTag = new EntityTag(etagGenerator.computeHashForChampRelationships(retrieved));
       response = Response.status(Status.OK).entity(mapper.writeValueAsString(retrieved)).tag(eTag).build();
     } catch (JsonProcessingException e) {
