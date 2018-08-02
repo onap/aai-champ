@@ -155,7 +155,9 @@ public class ChampRESTAPI {
         response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         LoggingUtil.logInternalError(logger, e);
     } finally {
-      logger.debug(response.getEntity().toString());
+      if (response != null) {
+        logger.debug(response.getEntity().toString());
+      }
       LoggingUtil.logRestRequest(logger, auditLogger, req, response);
       metricsLogger.info(ChampMsgs.PROCESSED_REQUEST, "GET", Long.toString(System.currentTimeMillis() - startTimeInMs));
     }
