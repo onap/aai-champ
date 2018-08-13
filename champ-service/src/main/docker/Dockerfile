@@ -9,7 +9,7 @@ RUN apt-get update
 # Install and setup java8
 RUN apt-get update && apt-get install -y software-properties-common
 RUN sudo -E add-apt-repository ppa:openjdk-r/ppa && apt-get update && apt-get install -y openjdk-8-jdk
-ENV JAVA_HOME usr/lib/jvm/java-8-openjdk-$(dpkg --print-architecture)
+ENV JAVA_HOME usr/lib/jvm/java-8-openjdk--amd64
 RUN export JAVA_HOME
 
 # Build up the deployment folder structure
