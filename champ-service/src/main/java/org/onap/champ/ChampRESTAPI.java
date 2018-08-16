@@ -289,7 +289,7 @@ public class ChampRESTAPI {
       httpHeadersValidator.validateRequestHeaders(headers);
       ChampTransaction transaction = tId == null ? null : champDataService.getTransaction(tId);
 
-      if (transaction == null) {
+      if (tId != null && transaction == null) {
         throw new ChampServiceException("No transaction found for transaction ID: " + tId, Status.BAD_REQUEST);
       }
       retrieved = champDataService.getRelationshipsByObject(oId, Optional.ofNullable(transaction));
