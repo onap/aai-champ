@@ -29,7 +29,9 @@ import org.onap.aai.champcore.exceptions.ChampSchemaViolationException;
 import org.onap.aai.champcore.exceptions.ChampTransactionException;
 import org.onap.aai.champcore.exceptions.ChampUnmarshallingException;
 import org.onap.aai.champcore.model.ChampElement;
+import org.onap.aai.champcore.model.ChampField;
 import org.onap.aai.champcore.model.ChampObject;
+import org.onap.aai.champcore.model.ChampObjectIndex;
 import org.onap.aai.champcore.model.ChampRelationship;
 import org.onap.aai.champcore.model.fluent.object.ObjectBuildOrPropertiesStep;
 import org.onap.aai.cl.api.Logger;
@@ -64,6 +66,14 @@ public class ChampDataService {
 
     this.champUUIDService = champUUIDService;
     this.graphImpl = graphImpl;
+
+    ChampField field = new ChampField.Builder(ChampProperties.get("keyName"))
+        .type(ChampField.Type.STRING)
+        .build();
+    ChampObjectIndex index = new ChampObjectIndex.Builder(ChampProperties.get("keyName"), "STRING", field).build();
+
+    graphImpl.storeObjectIndex(index);
+
     this.cache = cache;
   }
 
