@@ -274,7 +274,7 @@ public class ChampAsyncRequestProcessor extends TimerTask {
                 Iterable<String> events = asyncRequestConsumer.consume();
 
                 if (events == null || !events.iterator().hasNext()) {
-                    logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO, "No events recieved");
+                    logger.info(ChampMsgs.CHAMP_ASYNC_REQUEST_PROCESSOR_INFO, "No events received");
                 } else {
                     processEvents(events);
                 }
