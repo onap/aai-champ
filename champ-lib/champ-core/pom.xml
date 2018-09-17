@@ -44,11 +44,6 @@ limitations under the License.
             <groupId>org.onap.aai.event-client</groupId>
             <artifactId>event-client-dmaap</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.onap.aai.event-client</groupId>
-            <artifactId>event-client-kafka</artifactId>
-        </dependency>
         <!-- Event Bus Library - END -->
 
         <dependency>
@@ -102,6 +97,26 @@ limitations under the License.
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-yarn-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-mapreduce-client-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-httpclient</groupId>
+                    <artifactId>commons-compress</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

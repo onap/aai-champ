@@ -39,7 +39,6 @@ limitations under the License.
         <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
         <common.logging.version>1.2.2</common.logging.version>
 
-        <version.com.google.guava>18.0</version.com.google.guava>
         <version.org.apache.commons.commons-lang3>3.7</version.org.apache.commons.commons-lang3>
         <version.org.hamcrest.hamcrest-library>1.3</version.org.hamcrest.hamcrest-library>
         <version.org.springframework.boot.spring-boot-dependencies>1.5.15.RELEASE</version.org.springframework.boot.spring-boot-dependencies>
@@ -123,7 +122,6 @@ limitations under the License.
          <dependency>
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
-          <version>${version.com.google.guava}</version>
         </dependency>
 
         <dependency>
