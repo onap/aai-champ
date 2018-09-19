@@ -230,6 +230,10 @@ limitations under the License.
                     <groupId>org.mindrot</groupId>
                     <artifactId>jbcrypt</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>dom4j</groupId>
+                    <artifactId>dom4j</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
