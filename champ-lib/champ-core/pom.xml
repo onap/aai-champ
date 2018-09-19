@@ -118,6 +118,10 @@ limitations under the License.
                     <groupId>commons-httpclient</groupId>
                     <artifactId>commons-compress</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-httpclient</groupId>
+                    <artifactId>commons-httpclient</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
