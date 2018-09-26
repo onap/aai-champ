@@ -84,10 +84,6 @@ limitations under the License.
                     <artifactId>httpclient</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.codehaus.jackson</groupId>
-                    <artifactId>jackson-mapper-asl</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.mindrot</groupId>
                     <artifactId>jbcrypt</artifactId>
                 </exclusion>

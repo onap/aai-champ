@@ -192,10 +192,6 @@ limitations under the License.
                     <artifactId>lz4</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.codehaus.jackson</groupId>
-                    <artifactId>jackson-mapper-asl</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>dom4j</groupId>
                     <artifactId>dom4j</artifactId>
                 </exclusion>
