@@ -49,6 +49,10 @@ limitations under the License.
             <groupId>org.onap.aai.event-client</groupId>
             <artifactId>event-client-kafka</artifactId>
         </dependency>
+                     <dependency>
+                        <groupId>org.onap.aai.event-client</groupId>
+                        <artifactId>event-client-rabbitmq</artifactId>
+                </dependency>
         <!-- Event Bus Library - END -->
 
         <dependency>

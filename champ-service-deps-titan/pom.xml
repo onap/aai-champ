@@ -139,6 +139,10 @@ limitations under the License.
                     <artifactId>event-client-kafka</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.onap.aai.event-client</groupId>
+                    <artifactId>event-client-rabbitmq</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpcore</artifactId>
                 </exclusion>
