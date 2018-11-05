@@ -32,7 +32,7 @@ limitations under the License.
     <artifactId>champ</artifactId>
     <name>aai-champ</name>
     <packaging>pom</packaging>
-    <version>1.3.1-SNAPSHOT</version>
+    <version>1.4.0-SNAPSHOT</version>
 
     <properties>
         <onap.nexus.url>https://nexus.onap.org</onap.nexus.url>
