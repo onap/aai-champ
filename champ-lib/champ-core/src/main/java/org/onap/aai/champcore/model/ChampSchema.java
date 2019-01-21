@@ -4,6 +4,7 @@
  * ===================================================================
  * Copyright © 2017-2018 AT&T Intellectual Property. All rights reserved.
  * Copyright © 2017-2018 Amdocs
+ * Copyright © 2019 IBM
  * ===================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +24,7 @@ package org.onap.aai.champcore.model;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.onap.aai.champcore.model.fluent.schema.CreateChampSchemable;
@@ -132,6 +134,11 @@ public final class ChampSchema {
 		}
 		
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(objectConstraints, relationshipConstraints);
 	}
 
 	@Override
