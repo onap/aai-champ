@@ -56,6 +56,14 @@ public class ChampApplication extends SpringBootServletInitializer {
             props.put("server.ssl.trust-store-password", trustStorePassword);
         }
 
+        String requireClientAuth = System.getenv("REQUIRE_CLIENT_AUTH");
+        if (requireClientAuth == null || requireClientAuth.isEmpty()) {
+            props.put("server.ssl.client-auth", "need");
+        }else {
+            props.put("server.ssl.client-auth",requireClientAuth.equals("true")?"need":"want");
+        }       
+
+
         new ChampApplication().configure(new SpringApplicationBuilder(ChampApplication.class).properties(props))
                 .run(args);
     }
