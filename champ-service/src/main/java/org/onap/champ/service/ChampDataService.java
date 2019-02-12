@@ -36,12 +36,18 @@ import org.onap.aai.champcore.model.ChampRelationship;
 import org.onap.aai.champcore.model.fluent.object.ObjectBuildOrPropertiesStep;
 import org.onap.aai.cl.api.Logger;
 import org.onap.aai.cl.eelf.LoggerFactory;
+import org.onap.champ.entity.ChampBulkEdgeResponse;
+import org.onap.champ.entity.ChampBulkOp;
+import org.onap.champ.entity.ChampBulkPayload;
+import org.onap.champ.entity.ChampBulkResponse;
+import org.onap.champ.entity.ChampBulkVertexResponse;
 import org.onap.champ.exception.ChampServiceException;
 import org.onap.champ.service.logging.ChampMsgs;
 import org.onap.champ.util.ChampProperties;
 import org.onap.champ.util.ChampServiceConstants;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -68,8 +74,8 @@ public class ChampDataService {
     this.graphImpl = graphImpl;
 
     ChampField field = new ChampField.Builder(ChampProperties.get("keyName"))
-        .type(ChampField.Type.STRING)
-        .build();
+            .type(ChampField.Type.STRING)
+            .build();
     ChampObjectIndex index = new ChampObjectIndex.Builder(ChampProperties.get("keyName"), "STRING", field).build();
 
     graphImpl.storeObjectIndex(index);
@@ -93,8 +99,8 @@ public class ChampDataService {
   }
 
   public ChampObject storeObject(ChampObject object, Optional<ChampTransaction> transaction)
-      throws ChampMarshallingException, ChampSchemaViolationException, ChampObjectNotExistsException,
-      ChampTransactionException, ChampServiceException {
+          throws ChampMarshallingException, ChampSchemaViolationException, ChampObjectNotExistsException,
+          ChampTransactionException, ChampServiceException {
 
     if (object.getProperty(KEY_NAME).isPresent() || object.getKey().isPresent()) {
       throw new ChampServiceException(KEY_NAME + " can't be updated", Status.BAD_REQUEST);
@@ -107,8 +113,8 @@ public class ChampDataService {
   }
 
   public ChampObject replaceObject(ChampObject object, String objectId, Optional<ChampTransaction> transaction)
-      throws ChampServiceException, ChampUnmarshallingException, ChampTransactionException, ChampMarshallingException,
-      ChampSchemaViolationException, ChampObjectNotExistsException {
+          throws ChampServiceException, ChampUnmarshallingException, ChampTransactionException, ChampMarshallingException,
+          ChampSchemaViolationException, ChampObjectNotExistsException {
     if (object.getKey().isPresent() && (!object.getKeyValue().equals(objectId))) {
       throw new ChampServiceException("Object Id in the URI doesn't match the body.", Status.BAD_REQUEST);
     }
@@ -122,7 +128,7 @@ public class ChampDataService {
       throw new ChampServiceException(objectId + " not found", Status.NOT_FOUND);
     }
     ObjectBuildOrPropertiesStep payloadBuilder = ChampObject.create().from(object).withKey(retrieved.get().getKey().get())
-        .withProperty(KEY_NAME, objectId);
+            .withProperty(KEY_NAME, objectId);
     if (retrieved.get().getProperty(SOT_NAME).isPresent()){
       payloadBuilder = payloadBuilder.withProperty(SOT_NAME, retrieved.get().getProperty(SOT_NAME).get());
     }
@@ -147,7 +153,7 @@ public class ChampDataService {
   }
 
   public void deleteObject(String objectId, Optional<ChampTransaction> transaction) throws ChampServiceException,
-      ChampObjectNotExistsException, ChampTransactionException, ChampUnmarshallingException {
+          ChampObjectNotExistsException, ChampTransactionException, ChampUnmarshallingException {
     Optional<ChampObject> retrieved = champUUIDService.getObjectbyUUID(objectId, transaction.orElse(null));
     if (!retrieved.isPresent()) {
       throw new ChampServiceException(objectId + " not found", Status.NOT_FOUND);
@@ -156,19 +162,19 @@ public class ChampDataService {
 
     if (relationships.count() > 0) {
       throw new ChampServiceException("Attempt to delete vertex with id " + objectId + " which has incident edges.",
-          Status.BAD_REQUEST);
+              Status.BAD_REQUEST);
     }
     graphImpl.deleteObject(retrieved.get().getKey().get(), transaction);
 
   }
 
   public ChampRelationship storeRelationship(ChampRelationship r, Optional<ChampTransaction> transaction)
-      throws ChampMarshallingException, ChampObjectNotExistsException, ChampSchemaViolationException,
-      ChampRelationshipNotExistsException, ChampUnmarshallingException, ChampTransactionException,
-      ChampServiceException {
+          throws ChampMarshallingException, ChampObjectNotExistsException, ChampSchemaViolationException,
+          ChampRelationshipNotExistsException, ChampUnmarshallingException, ChampTransactionException,
+          ChampServiceException {
 
     if (r.getSource() == null || !r.getSource().getKey().isPresent() || r.getTarget() == null
-        || !r.getTarget().getKey().isPresent()) {
+            || !r.getTarget().getKey().isPresent()) {
       logger.error(ChampMsgs.CHAMP_DATA_SERVICE_ERROR, "Source/Target Object key must be provided");
       throw new ChampServiceException("Source/Target Object key must be provided", Status.BAD_REQUEST);
     }
@@ -180,9 +186,9 @@ public class ChampDataService {
     }
 
     Optional<ChampObject> source = champUUIDService.getObjectbyUUID(r.getSource().getKey().get().toString(),
-        transaction.orElse(null));
+            transaction.orElse(null));
     Optional<ChampObject> target = champUUIDService.getObjectbyUUID(r.getTarget().getKey().get().toString(),
-        transaction.orElse(null));
+            transaction.orElse(null));
 
     if (!source.isPresent() || !target.isPresent()) {
       logger.error(ChampMsgs.CHAMP_DATA_SERVICE_ERROR, "Source/Target object not found");
@@ -192,19 +198,19 @@ public class ChampDataService {
     champUUIDService.populateUUIDProperty(r, java.util.UUID.randomUUID().toString());
 
     ChampRelationship payload = new ChampRelationship.Builder(source.get(), target.get(), r.getType())
-        .properties(r.getProperties()).build();
+            .properties(r.getProperties()).build();
     addTimestamps(payload, null);
     ChampRelationship created = graphImpl.storeRelationship(payload, transaction);
     return (ChampRelationship) champUUIDService.populateUUIDKey(created);
   }
 
   public ChampRelationship updateRelationship(ChampRelationship r, String rId, Optional<ChampTransaction> transaction)
-      throws ChampServiceException, ChampUnmarshallingException, ChampTransactionException, ChampMarshallingException,
-      ChampSchemaViolationException, ChampRelationshipNotExistsException {
+          throws ChampServiceException, ChampUnmarshallingException, ChampTransactionException, ChampMarshallingException,
+          ChampSchemaViolationException, ChampRelationshipNotExistsException {
     if (r.getKey().isPresent() && (!r.getKeyValue().equals(rId))) {
 
       throw new ChampServiceException("Relationship Id in the URI \"" + rId + "\" doesn't match the URI in the body"
-          + " \"" + r.getKeyValue() + "\"", Status.BAD_REQUEST);
+              + " \"" + r.getKeyValue() + "\"", Status.BAD_REQUEST);
 
     }
 
@@ -218,14 +224,14 @@ public class ChampDataService {
     }
     // check if key is present or if it equals the key that is in the URI
     if (r.getSource() == null || !r.getSource().getKey().isPresent() || r.getTarget() == null
-        || !r.getTarget().getKey().isPresent()) {
+            || !r.getTarget().getKey().isPresent()) {
       throw new ChampServiceException("Source/Target Object key must be provided", Status.BAD_REQUEST);
     }
     ChampObject source = retrieved.get().getSource();
     ChampObject target = retrieved.get().getTarget();
 
     if (!source.getProperty(KEY_NAME).get().toString().equals(r.getSource().getKey().get().toString())
-        || !target.getProperty(KEY_NAME).get().toString().equals(r.getTarget().getKey().get().toString())) {
+            || !target.getProperty(KEY_NAME).get().toString().equals(r.getTarget().getKey().get().toString())) {
       throw new ChampServiceException("Source/Target cannot be updated", Status.BAD_REQUEST);
     }
 
@@ -242,17 +248,17 @@ public class ChampDataService {
     }
 
     ChampRelationship payload = new ChampRelationship.Builder(source, target, r.getType())
-        .key(retrieved.get().getKey().get()).properties(r.getProperties()).property(KEY_NAME, rId).build();
+            .key(retrieved.get().getKey().get()).properties(r.getProperties()).property(KEY_NAME, rId).build();
     addTimestamps(payload, (Long)retrieved.get().getProperty(CREATED_TS_NAME).orElse(null));
     ChampRelationship updated = graphImpl.replaceRelationship(payload, transaction);
     return (ChampRelationship) champUUIDService.populateUUIDKey(updated);
   }
 
   public void deleteRelationship(String relationshipId, Optional<ChampTransaction> transaction)
-      throws ChampServiceException, ChampRelationshipNotExistsException, ChampTransactionException,
-      ChampUnmarshallingException {
+          throws ChampServiceException, ChampRelationshipNotExistsException, ChampTransactionException,
+          ChampUnmarshallingException {
     Optional<ChampRelationship> retrieved = champUUIDService.getRelationshipbyUUID(relationshipId,
-        transaction.orElse(null));
+            transaction.orElse(null));
     if (!retrieved.isPresent()) {
       throw new ChampServiceException(relationshipId + " not found", Status.NOT_FOUND);
     }
@@ -263,7 +269,7 @@ public class ChampDataService {
 
 
   public List<ChampRelationship> getRelationshipsByObject(String objectId, Optional<ChampTransaction> transaction)
-      throws ChampServiceException {
+          throws ChampServiceException {
     try {
       Optional<ChampObject> retrievedObject = champUUIDService.getObjectbyUUID(objectId, transaction.orElse(null));
       if (!retrievedObject.isPresent()) {
@@ -322,7 +328,7 @@ public class ChampDataService {
   }
 
   public ChampRelationship getRelationship(String id, Optional<ChampTransaction> transaction)
-      throws ChampServiceException {
+          throws ChampServiceException {
 
     Optional<ChampRelationship> retrieved = Optional.empty();
     try {
@@ -369,6 +375,87 @@ public class ChampDataService {
 
   public ChampTransaction getTransaction(String id) {
     return cache.get(id);
+  }
+
+  public ChampBulkResponse processBulkRequest(ChampBulkPayload bulkPayload) throws ChampServiceException, ChampRelationshipNotExistsException, ChampTransactionException, ChampUnmarshallingException, ChampObjectNotExistsException, ChampMarshallingException, ChampSchemaViolationException {
+    // Open a transaction.  If any operations fail, we want to rollback
+    ChampTransaction transaction = graphImpl.openTransaction();
+    if (transaction == null) {
+      throw new ChampServiceException("Unable to open transaction", Status.INTERNAL_SERVER_ERROR);
+    }
+
+    ChampBulkResponse responsePayload = new ChampBulkResponse();
+    Map<String,ChampObject> addedObjects = new HashMap<String,ChampObject>();
+    List<ChampBulkVertexResponse> addedObjectsResp = new ArrayList<ChampBulkVertexResponse>();
+    List<ChampBulkEdgeResponse> addedEdgesResp = new ArrayList<ChampBulkEdgeResponse>();
+
+    try {
+      // 1. Process edge deletes
+      for (ChampBulkOp op : bulkPayload.getEdgeDeleteOps()) {
+        deleteRelationship(op.getId(), Optional.ofNullable(transaction));
+      }
+
+      // 2. Process vertex deletes
+      for (ChampBulkOp op : bulkPayload.getVertexDeleteOps()) {
+        deleteObject(op.getId(), Optional.ofNullable(transaction));
+      }
+
+      // 3. Add/modify vertexes
+      for (ChampBulkOp op : bulkPayload.getVertexAddModifyOps()) {
+        if (op.getOperation().equals(ChampBulkPayload.ADD_OP)) {
+          ChampObject addedObj = storeObject(op.toChampObject(), Optional.ofNullable(transaction));
+          addedObjects.put(op.getLabel(), addedObj);
+          addedObjectsResp.add(new ChampBulkVertexResponse(op.getLabel(), addedObj));
+        }
+        else {
+          ChampObject addedObj = replaceObject(op.toChampObject(), op.getId(), Optional.ofNullable(transaction));
+          addedObjects.put(op.getLabel(), addedObj);
+          addedObjectsResp.add(new ChampBulkVertexResponse(op.getLabel(), addedObj));
+        }
+      }
+
+      // 4. Add/modify edges
+      for (ChampBulkOp op : bulkPayload.getEdgeAddModifyOps()) {
+        // If the edge references a newly added vertex, we need to replace the reference with the real ID
+        op.setSource(resolveVertex(op.getSource(), addedObjects));
+        op.setTarget(resolveVertex(op.getTarget(), addedObjects));
+
+        if (op.getOperation().equals(ChampBulkPayload.ADD_OP)) {
+          ChampRelationship addedRel = storeRelationship(op.toChampRelationship(), Optional.ofNullable(transaction));
+          addedEdgesResp.add(new ChampBulkEdgeResponse(op.getLabel(), addedRel));
+        }
+        else {
+          ChampRelationship addedRel = updateRelationship(op.toChampRelationship(), op.getId(), Optional.ofNullable(transaction));
+          addedEdgesResp.add(new ChampBulkEdgeResponse(op.getLabel(), addedRel));
+        }
+      }
+    }
+    catch (Exception ex) {
+      // Rollback the transaction
+      graphImpl.rollbackTransaction(transaction);
+      throw ex;
+    }
+
+    // Commit transaction
+    graphImpl.commitTransaction(transaction);
+
+    responsePayload.setObjects(addedObjectsResp);
+    responsePayload.setRelationships(addedEdgesResp);
+    return responsePayload;
+  }
+
+
+  private String resolveVertex(String vertexId, Map<String, ChampObject> addedObjects) throws ChampServiceException {
+    if (vertexId.startsWith("$")) {
+      String key = vertexId.substring(1);
+      if (addedObjects.get(key) != null) {
+        return addedObjects.get(key).getKey().get().toString();
+      }
+
+      throw new ChampServiceException("Unable to resolve vertex " + key, Status.BAD_REQUEST);
+    }
+
+    return vertexId;
   }
 
   private void addTimestamps(ChampElement e, Long oldCreated) {

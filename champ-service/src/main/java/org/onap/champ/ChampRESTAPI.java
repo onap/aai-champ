@@ -59,6 +59,8 @@ import org.onap.aai.champcore.model.ChampRelationship;
 import org.onap.aai.cl.api.Logger;
 import org.onap.aai.cl.eelf.LoggerFactory;
 import org.onap.champ.async.ChampAsyncRequestProcessor;
+import org.onap.champ.entity.ChampBulkPayload;
+import org.onap.champ.entity.ChampBulkResponse;
 import org.onap.champ.entity.ChampObjectDeserializer;
 import org.onap.champ.entity.ChampObjectSerializer;
 import org.onap.champ.entity.ChampRelationshipDeserializer;
@@ -639,6 +641,38 @@ public class ChampRESTAPI {
     return response;
   }
 
+  @POST
+  @Path("bulk")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response postBulk(String bulkPayload, @Context HttpHeaders headers,
+      @Context UriInfo uriInfo, @Context HttpServletRequest req) {
+    LoggingUtil.initMdcContext(req, headers);
+    long startTimeInMs = System.currentTimeMillis();
+    logger.info(ChampMsgs.INCOMING_REQUEST, "null", bulkPayload);
+    Response response = null;
+    try {
+      httpHeadersValidator.validateRequestHeaders(headers);
+      ChampBulkPayload bulkRequest = ChampBulkPayload.fromJson(bulkPayload);
+      ChampBulkResponse bulkResponse = champDataService.processBulkRequest(bulkRequest);
+      
+      response = Response.status(Status.OK).entity(bulkResponse.toJson()).build();
+    } catch (ChampServiceException ce) {
+      response = Response.status(ce.getHttpStatus()).entity(ce.getMessage()).build();
+    } catch (IllegalArgumentException e) {
+      response = Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+    } catch (Exception e) {
+      response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+      LoggingUtil.logInternalError(logger, e);
+    } finally {
+      LoggingUtil.logRestRequest(logger, auditLogger, req, response);
+      metricsLogger.info(ChampMsgs.PROCESSED_REQUEST, "POST",
+          Long.toString(System.currentTimeMillis() - startTimeInMs));
+    }
+    
+    return response;
+  }
+  
   private boolean reservedKeyMatcher(Pattern p, String key) {
     Matcher m = p.matcher ( key );
     if (m.matches()) {
