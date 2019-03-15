@@ -27,7 +27,11 @@ import org.onap.aai.champcore.exceptions.ChampUnmarshallingException;
 import org.onap.aai.champcore.model.ChampElement;
 import org.onap.aai.champcore.model.ChampObject;
 import org.onap.aai.champcore.model.ChampRelationship;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
+import org.onap.champ.ChampRESTAPI;
 import org.onap.champ.exception.ChampServiceException;
+import org.onap.champ.service.logging.ChampMsgs;
 import org.onap.champ.util.ChampProperties;
 import org.onap.champ.util.ChampServiceConstants;
 
@@ -41,7 +45,7 @@ import java.util.stream.Stream;
 public class ChampUUIDService {
   private ChampGraph graphImpl;
   private static final String KEY_NAME = ChampProperties.get(ChampServiceConstants.CHAMP_KEY_NAME);
-
+  private Logger logger = LoggerFactory.getInstance().getLogger(ChampUUIDService.class);
 
   public ChampUUIDService(ChampGraph graphImpl) {
     this.graphImpl = graphImpl;
@@ -117,18 +121,20 @@ public class ChampUUIDService {
       throws ChampUnmarshallingException, ChampTransactionException, ChampServiceException {
     Optional<ChampRelationship> response = Optional.empty();
 
-
     Stream<ChampRelationship> s;
     Map<String, Object> filter = new HashMap<>();
     filter.put(KEY_NAME, uuid);
 
     s = graphImpl.queryRelationships(filter, Optional.ofNullable(transaction));
+    
     Object[] objs = s.toArray();
     if (objs.length == 0) {
       return response;
     }
+    
     response = graphImpl.retrieveRelationship(((ChampRelationship) objs[0]).getKey().get(),
         Optional.ofNullable(transaction));
+    
     return response;
   }
 

@@ -225,11 +225,13 @@ public class ChampAPIPerformanceTest {
 	}
 
 	private static void storeIndices(ChampGraph graph, boolean warmUp) {
+        List<String> fields = new ArrayList<String>();
+        fields.add("objectNumber");
 		graph.storeObjectIndex(
 			ChampObjectIndex.create()
 							.ofName("objectNumberIndex")
 							.onType("foo")
-							.forField("objectNumber")
+							.forFields(fields)
 							.build()
 		);
 

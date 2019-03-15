@@ -36,6 +36,7 @@ import org.onap.aai.champcore.exceptions.ChampIndexNotExistsException;
 import org.onap.aai.champcore.exceptions.ChampSchemaViolationException;
 import org.onap.aai.champcore.graph.impl.AbstractTinkerpopChampGraph;
 import org.onap.aai.champcore.model.ChampCardinality;
+import org.onap.aai.champcore.model.ChampField;
 import org.onap.aai.champcore.model.ChampObject;
 import org.onap.aai.champcore.model.ChampObjectConstraint;
 import org.onap.aai.champcore.model.ChampObjectIndex;
@@ -61,6 +62,7 @@ import com.thinkaurelius.titan.core.schema.SchemaAction;
 import com.thinkaurelius.titan.core.schema.SchemaStatus;
 import com.thinkaurelius.titan.core.schema.TitanGraphIndex;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
+import com.thinkaurelius.titan.core.schema.TitanManagement.IndexBuilder;
 import com.thinkaurelius.titan.graphdb.database.management.ManagementSystem;
 
 public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
@@ -171,15 +173,18 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
 
     final TitanGraph graph = getGraph();
     final TitanManagement createIndexMgmt = graph.openManagement();
-    final PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(index.getField().getName());
 
     if (createIndexMgmt.getGraphIndex(index.getName()) != null) {
       createIndexMgmt.rollback();
       return; //Ignore, index already exists
     }
 
-    createIndexMgmt.buildIndex(index.getName(), Vertex.class).addKey(pk).buildCompositeIndex();
-
+    IndexBuilder ib = createIndexMgmt.buildIndex(index.getName(), Vertex.class);
+    for (ChampField field : index.getFields()) {
+      PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(field.getName());
+      ib = ib.addKey(pk);
+    }
+    ib.buildCompositeIndex();
     createIndexMgmt.commit();
     graph.tx().commit();
 
@@ -195,11 +200,15 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
 
     if (index == null) return Optional.empty();
     if (index.getIndexedElement() != TitanVertex.class) return Optional.empty();
+    List<String> fieldNames = new ArrayList<String>();
+    for (int i = 0; i < index.getFieldKeys().length; i++) {
+      fieldNames.add(index.getFieldKeys()[i].name());
+    }
 
     return Optional.of(ChampObjectIndex.create()
         .ofName(indexName)
         .onType(ChampObject.ReservedTypes.ANY.toString())
-        .forField(index.getFieldKeys()[0].name())
+        .forFields(fieldNames)
         .build());
   }
 
@@ -218,11 +227,16 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
       public boolean hasNext() {
         if (indices.hasNext()) {
           final TitanGraphIndex index = indices.next();
+          
+          List<String> fieldNames = new ArrayList<String>();
+          for (int i = 0; i < index.getFieldKeys().length; i++) {
+            fieldNames.add(index.getFieldKeys()[i].name());
+          }
 
           next = ChampObjectIndex.create()
               .ofName(index.name())
               .onType(ChampObject.ReservedTypes.ANY.toString())
-              .forField(index.getFieldKeys()[0].name())
+              .forFields(fieldNames)
               .build();
           return true;
         }
@@ -472,4 +486,9 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
 	public GraphTraversal<?, ?> hasLabel(GraphTraversal<?, ?> query, Object type) {
 		return query.hasLabel((String) type);
 	}
+
+  @Override
+  public void createDefaultIndexes() {
+    LOGGER.error("No default indexes being created");
+  }
 }

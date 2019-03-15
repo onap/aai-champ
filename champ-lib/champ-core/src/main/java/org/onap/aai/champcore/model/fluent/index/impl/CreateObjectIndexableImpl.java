@@ -20,6 +20,9 @@
  */
 package org.onap.aai.champcore.model.fluent.index.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.onap.aai.champcore.model.ChampField;
 import org.onap.aai.champcore.model.ChampObject;
 import org.onap.aai.champcore.model.ChampObjectIndex;
@@ -39,14 +42,17 @@ public final class CreateObjectIndexableImpl implements CreateObjectIndexable {
 				return new ObjectIndexFieldStep() {
 
 					@Override
-					public BuildStep<ChampObjectIndex> forField(String fieldName) {
+					public BuildStep<ChampObjectIndex> forFields(List<String> fieldNames) {
 						return new BuildStep<ChampObjectIndex> () {
 
 							@Override
 							public ChampObjectIndex build() {
+							    List<ChampField> fields = new ArrayList<ChampField>();
+							    for (String fn : fieldNames) {
+							        fields.add(new ChampField.Builder(fn).build());
+							    }
 								return new ChampObjectIndex.Builder(
-									name, objectType, new ChampField.Builder(fieldName).build()
-								).build();
+									name, objectType, fields).build();
 							}
 						};
 					}
@@ -58,14 +64,17 @@ public final class CreateObjectIndexableImpl implements CreateObjectIndexable {
 				return new ObjectIndexFieldStep() {
 
 					@Override
-					public BuildStep<ChampObjectIndex> forField(String fieldName) {
+					public BuildStep<ChampObjectIndex> forFields(List<String> fieldNames) {
 						return new BuildStep<ChampObjectIndex> () {
 
 							@Override
 							public ChampObjectIndex build() {
+							    List<ChampField> fields = new ArrayList<ChampField>();
+                                for (String fn : fieldNames) {
+                                    fields.add(new ChampField.Builder(fn).build());
+                                }
 								return new ChampObjectIndex.Builder(
-									name, ChampObject.ReservedTypes.ANY.toString(), new ChampField.Builder(fieldName).build()
-								).build();
+									name, ChampObject.ReservedTypes.ANY.toString(), fields).build();
 							}
 						};
 					}

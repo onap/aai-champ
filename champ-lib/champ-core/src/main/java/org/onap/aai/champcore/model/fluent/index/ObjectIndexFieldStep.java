@@ -20,10 +20,12 @@
  */
 package org.onap.aai.champcore.model.fluent.index;
 
+import java.util.List;
+
 import org.onap.aai.champcore.model.ChampObjectIndex;
 import org.onap.aai.champcore.model.fluent.BuildStep;
 
 public interface ObjectIndexFieldStep {
 
-	public BuildStep<ChampObjectIndex> forField(String fieldName);
+	public BuildStep<ChampObjectIndex> forFields(List<String> fieldNames);
 }

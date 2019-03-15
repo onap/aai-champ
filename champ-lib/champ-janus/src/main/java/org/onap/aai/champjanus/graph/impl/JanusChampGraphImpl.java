@@ -24,14 +24,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.janusgraph.core.*;
-import org.onap.aai.champcore.Formatter;
 import org.janusgraph.core.schema.JanusGraphIndex;
 import org.janusgraph.core.schema.JanusGraphManagement;
+import org.janusgraph.core.schema.JanusGraphManagement.IndexBuilder;
 import org.janusgraph.core.schema.SchemaAction;
 import org.janusgraph.core.schema.SchemaStatus;
 import org.janusgraph.graphdb.database.management.ManagementSystem;
 import org.onap.aai.champcore.ChampCapabilities;
-import org.onap.aai.champcore.FormatMapper;
 import org.onap.aai.champcore.exceptions.ChampIndexNotExistsException;
 import org.onap.aai.champcore.exceptions.ChampSchemaViolationException;
 import org.onap.aai.champcore.graph.impl.AbstractTinkerpopChampGraph;
@@ -54,7 +53,7 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
   private static final String JANUS_HBASE_TABLE = "storage.hbase.table";
   private static final String JANUS_UNIQUE_SUFFIX = "graph.unique-instance-id-suffix";
   private static final ChampSchemaEnforcer SCHEMA_ENFORCER = new DefaultChampSchemaEnforcer();
-  private static final int REGISTER_OBJECT_INDEX_TIMEOUT_SECS = 30;
+  private static final int REGISTER_OBJECT_INDEX_TIMEOUT_SECS = 45;
 
   private static final ChampCapabilities CAPABILITIES = new ChampCapabilities() {
 
@@ -69,11 +68,12 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
     }
   };
 
-  private final JanusGraph graph;
+  private JanusGraph graph;
+  private final JanusGraphFactory.Builder janusGraphBuilder;
 
   public JanusChampGraphImpl(Builder builder) {
     super(builder.graphConfiguration);
-    final JanusGraphFactory.Builder janusGraphBuilder = JanusGraphFactory.build();
+    janusGraphBuilder = JanusGraphFactory.build();
 
     for (Map.Entry<String, Object> janusGraphProperty : builder.graphConfiguration.entrySet()) {
       janusGraphBuilder.set(janusGraphProperty.getKey(), janusGraphProperty.getValue());
@@ -98,8 +98,16 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
       throw new RuntimeException("Unknown storage.backend=" + storageBackend);
     }
     
+    try {
+      openGraph();
+    }
+    catch (Exception ex) {
+      // Swallow exception.  Cassandra may not be reachable.  Will retry next time we need to use the graph.
+      LOGGER.error("Error opening graph: " + ex.getMessage());
+      return;
+    }
+    
     LOGGER.info("Instantiated data access layer for Janus graph data store with backend: " + storageBackend);
-    this.graph = janusGraphBuilder.open();
   }
 
   public static class Builder {
@@ -144,6 +152,9 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
 
   @Override
   protected JanusGraph getGraph() {
+    if (graph == null) {
+      openGraph();
+    }
     return graph;
   }
 
@@ -161,14 +172,20 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
 
     final JanusGraph graph = getGraph();
     final JanusGraphManagement createIndexMgmt = graph.openManagement();
-    final PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(index.getField().getName());
 
     if (createIndexMgmt.getGraphIndex(index.getName()) != null) {
       createIndexMgmt.rollback();
+      LOGGER.info("Index " + index.getName() + " already exists");
       return; //Ignore, index already exists
     }
 
-    createIndexMgmt.buildIndex(index.getName(), Vertex.class).addKey(pk).buildCompositeIndex();
+    LOGGER.info("Create index " + index.getName());
+    IndexBuilder ib = createIndexMgmt.buildIndex(index.getName(), Vertex.class);
+    for (ChampField field : index.getFields()) {
+      PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(field.getName());
+      ib = ib.addKey(pk);
+    }
+    ib.buildCompositeIndex();
 
     createIndexMgmt.commit();
     graph.tx().commit();
@@ -192,10 +209,15 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
       return Optional.empty();
     }
 
+    List<String> fieldNames = new ArrayList<String>();
+    for (int i = 0; i < index.getFieldKeys().length; i++) {
+      fieldNames.add(index.getFieldKeys()[i].name());
+    }
+    
     return Optional.of(ChampObjectIndex.create()
         .ofName(indexName)
         .onType(ChampObject.ReservedTypes.ANY.toString())
-        .forField(index.getFieldKeys()[0].name())
+        .forFields(fieldNames)
         .build());
   }
 
@@ -217,10 +239,15 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
         if (indices.hasNext()) {
           final JanusGraphIndex index = indices.next();
 
+          List<String> fieldNames = new ArrayList<String>();
+          for (int i = 0; i < index.getFieldKeys().length; i++) {
+            fieldNames.add(index.getFieldKeys()[i].name());
+          }
+          
           next = ChampObjectIndex.create()
               .ofName(index.name())
               .onType(ChampObject.ReservedTypes.ANY.toString())
-              .forField(index.getFieldKeys()[0].name())
+              .forFields(fieldNames)
               .build();
           return true;
         }
@@ -265,6 +292,8 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
     if (createIndexMgmt.getGraphIndex(index.getName()) != null) {
       return; //Ignore, index already exists
     }
+    
+    LOGGER.info("Create edge index " + index.getName());
     createIndexMgmt.buildIndex(index.getName(), Edge.class).addKey(pk).buildCompositeIndex();
 
     createIndexMgmt.commit();
@@ -404,7 +433,7 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
     try {
       ManagementSystem.awaitGraphIndexStatus(graph, indexName)
           .status(SchemaStatus.ENABLED)
-          .timeout(10, ChronoUnit.MINUTES)
+          .timeout(2, ChronoUnit.MINUTES)
           .call();
     } catch (InterruptedException e) {
       LOGGER.warn("Interrupted while waiting for index to transition to ENABLED state");
@@ -490,7 +519,66 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
     }
   }
   
-	public GraphTraversal<?, ?> hasLabel(GraphTraversal<?, ?> query, Object type) {
-		return query.hasLabel(type);
-	}
+  private synchronized void openGraph() {
+    if (graph == null) {
+      graph = janusGraphBuilder.open();
+    }
+  }
+  
+  public GraphTraversal<?, ?> hasLabel(GraphTraversal<?, ?> query, Object type) {
+    return query.hasLabel(type);
+  }
+
+
+  @Override
+  public void createDefaultIndexes() {
+    if (isShutdown()) {
+      throw new IllegalStateException("Cannot call storeObjectIndex() after shutdown has been initiated");
+    }
+
+    final String EDGE_IX_NAME = "rel-key-uuid";
+    
+    final JanusGraph graph = getGraph();
+    JanusGraphManagement createIndexMgmt = graph.openManagement();
+    
+    boolean vertexIndexExists = (createIndexMgmt.getGraphIndex(KEY_PROPERTY_NAME) != null);
+    boolean edgeIndexExists = (createIndexMgmt.getGraphIndex(EDGE_IX_NAME) != null);
+    boolean nodeTypeIndexExists = (createIndexMgmt.getGraphIndex(NODE_TYPE_PROPERTY_NAME) != null);
+    
+    if (!vertexIndexExists || !edgeIndexExists) {
+      PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(KEY_PROPERTY_NAME);
+      
+      if (!vertexIndexExists) {
+        LOGGER.info("Create Index " + KEY_PROPERTY_NAME);
+        createIndexMgmt.buildIndex(KEY_PROPERTY_NAME, Vertex.class).addKey(pk).buildCompositeIndex();
+      }
+      if (!edgeIndexExists) {
+        LOGGER.info("Create Index " + EDGE_IX_NAME);
+        createIndexMgmt.buildIndex(EDGE_IX_NAME, Edge.class).addKey(pk).buildCompositeIndex();
+      }
+      createIndexMgmt.commit();
+
+      if (!vertexIndexExists) {
+        awaitIndexCreation(KEY_PROPERTY_NAME);
+      }
+      if (!edgeIndexExists) {
+        awaitIndexCreation(EDGE_IX_NAME);
+      }
+    }
+    else {
+      createIndexMgmt.rollback();
+      LOGGER.info("Index " + KEY_PROPERTY_NAME + " and " + EDGE_IX_NAME + " already exist");
+    }
+    
+    
+    
+    if (!nodeTypeIndexExists) {
+      LOGGER.info("Create Index " + NODE_TYPE_PROPERTY_NAME);
+      createIndexMgmt = graph.openManagement();
+      PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(NODE_TYPE_PROPERTY_NAME);
+      createIndexMgmt.buildIndex(NODE_TYPE_PROPERTY_NAME, Vertex.class).addKey(pk).buildCompositeIndex();
+      createIndexMgmt.commit();
+      awaitIndexCreation(NODE_TYPE_PROPERTY_NAME);
+    }    
+  }
 }

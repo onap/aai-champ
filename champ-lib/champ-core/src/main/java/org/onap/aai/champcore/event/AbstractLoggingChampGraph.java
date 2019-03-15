@@ -69,6 +69,8 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   public static final String  PARAM_EVENT_STREAM_PUBLISHER_POOL_SIZE = "champcore.event.stream.publisher-pool-size";
   public static final Integer DEFAULT_EVENT_STREAM_PUBLISHER_POOL_SIZE = 5;
   public static final String PARAM_EVENT_STREAM_PRODUCER = "champcore.event.stream.publisher";
+  protected static final String KEY_PROPERTY_NAME = "aai-uuid";
+  protected static final String NODE_TYPE_PROPERTY_NAME = "aai-node-type";
 
   /** Pool of worker threads that do the work of publishing the events to the event bus. */
   protected ThreadPoolExecutor publisherPool;

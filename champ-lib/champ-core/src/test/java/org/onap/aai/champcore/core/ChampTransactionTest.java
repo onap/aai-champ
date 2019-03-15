@@ -230,6 +230,12 @@ public class ChampTransactionTest {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+  @Override
+  public void createDefaultIndexes() {
+    // TODO Auto-generated method stub
+    
+  }
     };
     
     TinkerpopTransaction t = new TinkerpopTransaction(g);
@@ -496,6 +502,12 @@ public class ChampTransactionTest {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+  @Override
+  public void createDefaultIndexes() {
+    // TODO Auto-generated method stub
+    
+  }
     
   }
 }

@@ -2,8 +2,8 @@
  * ============LICENSE_START==========================================
  * org.onap.aai
  * ===================================================================
- * Copyright © 2017-2018 AT&T Intellectual Property. All rights reserved.
- * Copyright © 2017-2018 Amdocs
+ * Copyright Â© 2017-2018 AT&T Intellectual Property. All rights reserved.
+ * Copyright Â© 2017-2018 Amdocs
  * ===================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,6 @@ public class ChampApplication extends SpringBootServletInitializer {
         }else {
             props.put("server.ssl.client-auth",requireClientAuth.equals("true")?"need":"want");
         }       
-
 
         new ChampApplication().configure(new SpringApplicationBuilder(ChampApplication.class).properties(props))
                 .run(args);

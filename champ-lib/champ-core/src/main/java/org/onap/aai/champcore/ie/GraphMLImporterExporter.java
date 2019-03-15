@@ -23,6 +23,7 @@ package org.onap.aai.champcore.ie;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -151,10 +152,12 @@ public class GraphMLImporterExporter implements Importer, Exporter {
 				final String graphName = graph.getAttributes().getNamedItem("id").getNodeValue();
 				final NodeList nodesAndEdges = graph.getChildNodes();
 
+				List<String> fields = new ArrayList<String>();
+			    fields.add("importAssignedId");     
 				api.getGraph(graphName).storeObjectIndex(ChampObjectIndex.create()
 																			.ofName("importAssignedId")
 																			.onAnyType()
-																			.forField("importAssignedId")
+																			.forFields(fields)
 																			.build());
 
 				for (int j = 0; j < nodesAndEdges.getLength(); j++) {

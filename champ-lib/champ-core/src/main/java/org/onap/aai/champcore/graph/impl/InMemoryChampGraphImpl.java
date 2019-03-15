@@ -21,7 +21,6 @@
 package org.onap.aai.champcore.graph.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +34,6 @@ import org.onap.aai.champcore.ChampCapabilities;
 import org.onap.aai.champcore.ChampTransaction;
 import org.onap.aai.champcore.NoOpTinkerPopTransaction;
 import org.onap.aai.champcore.exceptions.ChampIndexNotExistsException;
-import org.onap.aai.champcore.model.ChampObject;
 import org.onap.aai.champcore.model.ChampObjectIndex;
 import org.onap.aai.champcore.model.ChampRelationshipIndex;
 import org.onap.aai.champcore.schema.ChampSchemaEnforcer;
@@ -130,7 +128,7 @@ public final class InMemoryChampGraphImpl extends AbstractTinkerpopChampGraph {
 	  
 		if (isShutdown()) throw new IllegalStateException("Cannot call storeObjectIndex() after shutdown has been initiated");
 
-		getGraph().createIndex(index.getField().getName(), Vertex.class);
+		getGraph().createIndex(index.getFields().get(0).getName(), Vertex.class);
 		getObjectIndices().put(index.getName(), index);
 	}
 
@@ -158,7 +156,7 @@ public final class InMemoryChampGraphImpl extends AbstractTinkerpopChampGraph {
 
 		if (objectIndex == null) throw new ChampIndexNotExistsException();
 
-		getGraph().dropIndex(objectIndex.getField().getName(), Vertex.class);
+		getGraph().dropIndex(objectIndex.getFields().get(0).getName(), Vertex.class);
 	}
 
 	public void executeStoreRelationshipIndex(ChampRelationshipIndex index) {
@@ -205,4 +203,9 @@ public final class InMemoryChampGraphImpl extends AbstractTinkerpopChampGraph {
 	public GraphTraversal<?, ?> hasLabel(GraphTraversal<?, ?> query, Object type) {
 		return query.hasLabel((String)type, (String)type);
 	}
+
+  @Override
+  public void createDefaultIndexes() {
+    
+  }
 }

@@ -20,6 +20,7 @@
  */
 package org.onap.aai.champcore.model;
 
+import java.util.List;
 import java.util.Objects;
 import org.onap.aai.champcore.model.fluent.index.CreateObjectIndexable;
 import org.onap.aai.champcore.model.fluent.index.impl.CreateObjectIndexableImpl;
@@ -28,7 +29,7 @@ public final class ChampObjectIndex {
 
 	private final String name;
 	private final String type;
-	private final ChampField field;
+	private final List<ChampField> fields;
 
 	public static CreateObjectIndexable create() {
 		return new CreateObjectIndexableImpl();
@@ -41,22 +42,22 @@ public final class ChampObjectIndex {
 	private ChampObjectIndex(Builder builder) {
 		this.name = builder.name;
 		this.type = builder.type;
-		this.field = builder.field;
+		this.fields = builder.fields;
 	}
 
 	public String getName() { return name; }
 	public String getType() { return type; }
-	public ChampField getField() { return field; }
+	public List<ChampField> getFields() { return fields; }
 
 	public static class Builder {
 		private final String name;
 		private final String type;
-		private final ChampField field;
+		private final List<ChampField> fields;
 
-		public Builder(String name, String type, ChampField field) {
+		public Builder(String name, String type, List<ChampField> fields) {
 			this.name = name;
 			this.type = type;
-			this.field = field;
+			this.fields = fields;
 		}
 
 		public ChampObjectIndex build() {
@@ -68,7 +69,7 @@ public final class ChampObjectIndex {
 	public String toString() {
 		return "{name: " + getName()
 			+ ", type: " + getType()
-			+ ", field: " + getField() + "}";
+			+ ", fields: " + getFields() + "}";
 	}
 
 	@Override
@@ -78,8 +79,9 @@ public final class ChampObjectIndex {
 		if (object instanceof ChampObjectIndex) {
 			final ChampObjectIndex objectIndex = (ChampObjectIndex) object;
 			
-			if (getName().equals(objectIndex.getName()) &&
-				getField().getName().equals(objectIndex.getField().getName())) return true;
+			if ( getName().equals(objectIndex.getName()) && (getFields().hashCode() == objectIndex.getFields().hashCode()) ) {
+			    return true;
+			}
 		}
 		
 		return false;
@@ -87,6 +89,6 @@ public final class ChampObjectIndex {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getName(), getField().getName());
+		return Objects.hash(getName(), getFields().hashCode());
 	}
 }

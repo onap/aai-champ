@@ -596,10 +596,12 @@ public class AbstractLoggingChampGraphTest {
                                            ChampIndexNotExistsException {
         
     // Create an index object and store it in the graph.
+    List<String> fields = new ArrayList<String>();
+    fields.add("myField");   
     ChampObjectIndex objIndex = ChampObjectIndex.create()
         .ofName("myIndex")
         .onType("type")
-        .forField("myField")
+        .forFields(fields)
         .build();
     testGraph.storeObjectIndex(objIndex);
     
@@ -650,10 +652,12 @@ public class AbstractLoggingChampGraphTest {
     testGraph.returnNulls();
     
     // Create an index object and store it in the graph.
+    List<String> fields = new ArrayList<String>();
+    fields.add("myField");    
     ChampObjectIndex objIndex = ChampObjectIndex.create()
         .ofName("myIndex")
         .onType("type")
-        .forField("myField")
+        .forFields(fields)
         .build();
     testGraph.storeObjectIndex(objIndex);
     
@@ -964,10 +968,12 @@ public class AbstractLoggingChampGraphTest {
     public Optional<ChampObjectIndex> retrieveObjectIndex(String indexName) {
       
       if(!returnNulls) {
+        List<String> fields = new ArrayList<String>();
+        fields.add("doesnt matter");
         return Optional.of(ChampObjectIndex.create()
                             .ofName(indexName)
                             .onType("doesnt matter")
-                            .forField("doesnt matter")
+                            .forFields(fields)
                             .build());
       } else {
         return Optional.empty();
@@ -1064,6 +1070,12 @@ public class AbstractLoggingChampGraphTest {
     @Override
     public void rollbackTransaction(ChampTransaction transaction) {
       // Not used by any tests.    
+    }
+
+    @Override
+    public void createDefaultIndexes() {
+      // TODO Auto-generated method stub
+      
     }
   }
   

@@ -623,4 +623,7 @@ public interface ChampGraph {
 	 * @return What this graph is capable of performing
 	 */
 	 public ChampCapabilities capabilities();
+
+
+   public void createDefaultIndexes();
 }

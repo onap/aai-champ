@@ -46,6 +46,8 @@ import org.onap.champ.service.logging.ChampMsgs;
 import org.onap.champ.util.ChampProperties;
 import org.onap.champ.util.ChampServiceConstants;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +63,7 @@ public class ChampDataService {
 
   private ChampGraph graphImpl;
   private ChampTransactionCache cache;
+  private boolean graphInitialized = false;
   private static final String KEY_NAME = ChampProperties.get(ChampServiceConstants.CHAMP_KEY_NAME);
   private static final String SOT_NAME = ChampProperties.get(ChampServiceConstants.CHAMP_SOT_NAME);
   private static final String CREATED_TS_NAME = ChampProperties.get(ChampServiceConstants.CHAMP_CREATED_TS_NAME);
@@ -72,19 +75,27 @@ public class ChampDataService {
 
     this.champUUIDService = champUUIDService;
     this.graphImpl = graphImpl;
-
-    ChampField field = new ChampField.Builder(ChampProperties.get("keyName"))
-            .type(ChampField.Type.STRING)
-            .build();
-    ChampObjectIndex index = new ChampObjectIndex.Builder(ChampProperties.get("keyName"), "STRING", field).build();
-
-    graphImpl.storeObjectIndex(index);
-
     this.cache = cache;
+    
+    try {
+      initializeGraph();
+    }
+    catch (Exception ex) {
+      // Swallow exception to prevent application from crashing.  Connection will be retried when
+      // champ processes a new request.
+      StringWriter writer = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(writer);
+      ex.printStackTrace(printWriter);
+      logger.error(ChampMsgs.CHAMP_DATA_SERVICE_ERROR, "Unable to initialize graph: " + ex.getLocalizedMessage());
+      logger.error(ChampMsgs.CHAMP_DATA_SERVICE_ERROR, writer.toString());
+    }
   }
 
   public ChampObject getObject(String id, Optional<ChampTransaction> transaction) throws ChampServiceException {
-
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     Optional<ChampObject> retrieved = Optional.empty();
     try {
       retrieved = champUUIDService.getObjectbyUUID(id, transaction.orElse(null));
@@ -101,7 +112,10 @@ public class ChampDataService {
   public ChampObject storeObject(ChampObject object, Optional<ChampTransaction> transaction)
           throws ChampMarshallingException, ChampSchemaViolationException, ChampObjectNotExistsException,
           ChampTransactionException, ChampServiceException {
-
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     if (object.getProperty(KEY_NAME).isPresent() || object.getKey().isPresent()) {
       throw new ChampServiceException(KEY_NAME + " can't be updated", Status.BAD_REQUEST);
     }
@@ -115,6 +129,10 @@ public class ChampDataService {
   public ChampObject replaceObject(ChampObject object, String objectId, Optional<ChampTransaction> transaction)
           throws ChampServiceException, ChampUnmarshallingException, ChampTransactionException, ChampMarshallingException,
           ChampSchemaViolationException, ChampObjectNotExistsException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     if (object.getKey().isPresent() && (!object.getKeyValue().equals(objectId))) {
       throw new ChampServiceException("Object Id in the URI doesn't match the body.", Status.BAD_REQUEST);
     }
@@ -154,6 +172,10 @@ public class ChampDataService {
 
   public void deleteObject(String objectId, Optional<ChampTransaction> transaction) throws ChampServiceException,
           ChampObjectNotExistsException, ChampTransactionException, ChampUnmarshallingException {
+    if (!graphInitialized) {
+      initializeGraph();
+    } 
+    
     Optional<ChampObject> retrieved = champUUIDService.getObjectbyUUID(objectId, transaction.orElse(null));
     if (!retrieved.isPresent()) {
       throw new ChampServiceException(objectId + " not found", Status.NOT_FOUND);
@@ -172,7 +194,10 @@ public class ChampDataService {
           throws ChampMarshallingException, ChampObjectNotExistsException, ChampSchemaViolationException,
           ChampRelationshipNotExistsException, ChampUnmarshallingException, ChampTransactionException,
           ChampServiceException {
-
+    if (!graphInitialized) {
+      initializeGraph();
+    } 
+      
     if (r.getSource() == null || !r.getSource().getKey().isPresent() || r.getTarget() == null
             || !r.getTarget().getKey().isPresent()) {
       logger.error(ChampMsgs.CHAMP_DATA_SERVICE_ERROR, "Source/Target Object key must be provided");
@@ -207,6 +232,10 @@ public class ChampDataService {
   public ChampRelationship updateRelationship(ChampRelationship r, String rId, Optional<ChampTransaction> transaction)
           throws ChampServiceException, ChampUnmarshallingException, ChampTransactionException, ChampMarshallingException,
           ChampSchemaViolationException, ChampRelationshipNotExistsException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }      
+      
     if (r.getKey().isPresent() && (!r.getKeyValue().equals(rId))) {
 
       throw new ChampServiceException("Relationship Id in the URI \"" + rId + "\" doesn't match the URI in the body"
@@ -257,6 +286,10 @@ public class ChampDataService {
   public void deleteRelationship(String relationshipId, Optional<ChampTransaction> transaction)
           throws ChampServiceException, ChampRelationshipNotExistsException, ChampTransactionException,
           ChampUnmarshallingException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     Optional<ChampRelationship> retrieved = champUUIDService.getRelationshipbyUUID(relationshipId,
             transaction.orElse(null));
     if (!retrieved.isPresent()) {
@@ -270,6 +303,10 @@ public class ChampDataService {
 
   public List<ChampRelationship> getRelationshipsByObject(String objectId, Optional<ChampTransaction> transaction)
           throws ChampServiceException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     try {
       Optional<ChampObject> retrievedObject = champUUIDService.getObjectbyUUID(objectId, transaction.orElse(null));
       if (!retrievedObject.isPresent()) {
@@ -296,8 +333,11 @@ public class ChampDataService {
    * @throws ChampServiceException
    */
   public List<ChampObject> queryObjects(Map<String, Object> filter, HashSet<String> properties) throws ChampServiceException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     try {
-
       Stream<ChampObject> retrieved = graphImpl.queryObjects(filter);
       List<ChampObject> objects = champUUIDService.populateUUIDKey(retrieved.collect(Collectors.toList()));
 
@@ -314,6 +354,10 @@ public class ChampDataService {
   }
 
   public List<ChampRelationship> queryRelationships(Map<String, Object> filter) throws ChampServiceException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     try {
       List<ChampRelationship> relations = new ArrayList<ChampRelationship>();
       Stream<ChampRelationship> retrieved;
@@ -329,7 +373,10 @@ public class ChampDataService {
 
   public ChampRelationship getRelationship(String id, Optional<ChampTransaction> transaction)
           throws ChampServiceException {
-
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     Optional<ChampRelationship> retrieved = Optional.empty();
     try {
       retrieved = champUUIDService.getRelationshipbyUUID(id, transaction.orElse(null));
@@ -344,6 +391,10 @@ public class ChampDataService {
   }
 
   public String openTransaction() {
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+    
     ChampTransaction transaction = graphImpl.openTransaction();
     String transacId = transaction.id();
     cache.put(transacId, transaction);
@@ -352,6 +403,10 @@ public class ChampDataService {
   }
 
   public void commitTransaction(String tId) throws ChampServiceException, ChampTransactionException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }      
+      
     ChampTransaction transaction = cache.get(tId);
     if (transaction == null) {
       throw new ChampServiceException("Transaction Not found: " + tId, Status.NOT_FOUND);
@@ -363,6 +418,10 @@ public class ChampDataService {
   }
 
   public void rollbackTransaction(String tId) throws ChampServiceException, ChampTransactionException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     ChampTransaction transaction = cache.get(tId);
     if (transaction == null) {
       throw new ChampServiceException("Transaction Not found: " + tId, Status.NOT_FOUND);
@@ -378,6 +437,10 @@ public class ChampDataService {
   }
 
   public ChampBulkResponse processBulkRequest(ChampBulkPayload bulkPayload) throws ChampServiceException, ChampRelationshipNotExistsException, ChampTransactionException, ChampUnmarshallingException, ChampObjectNotExistsException, ChampMarshallingException, ChampSchemaViolationException {
+    if (!graphInitialized) {
+      initializeGraph();
+    }
+      
     // Open a transaction.  If any operations fail, we want to rollback
     ChampTransaction transaction = graphImpl.openTransaction();
     if (transaction == null) {
@@ -468,5 +531,15 @@ public class ChampDataService {
     }
 
     e.getProperties().put(LAST_MOD_TS_NAME, timestamp);
+  }
+  
+  private synchronized void initializeGraph() {
+    if (graphInitialized) {
+      return;
+    }
+    
+    graphImpl.createDefaultIndexes();
+        
+    graphInitialized = true;
   }
 }
