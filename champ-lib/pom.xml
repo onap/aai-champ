@@ -48,6 +48,9 @@ limitations under the License.
         <!--this, simply remove the "-SNAPSHOT" from your <version> declaration at the-->
         <!--top of pom.xml &ndash;&gt;-->
         <!--<distFilesRoot>/appl/${project.artifactId}/${project.version}</distFilesRoot>-->
+         <!-- Minimum code coverage percentage. Please update this figure as coverage increases to prevent any drops in
+         coverage caused by new changes. Note that this figure cannot be lower than the ONAP requirement of 0.55 -->
+        <jacoco.line.coverage.limit>0.79</jacoco.line.coverage.limit>
     </properties>
 
     <dependencies>
@@ -57,94 +60,10 @@ limitations under the License.
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jacoco</groupId>
-            <artifactId>org.jacoco.agent</artifactId>
-            <version>0.7.9</version>
-            <classifier>runtime</classifier>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
-                <configuration>
-                    <excludes>
-                        <!-- These three need to be included again at some point -->
-                        <exclude>**/AbstractGremlinChampGraph*</exclude>
-                        <exclude>**/DseChampGraphImpl*</exclude>
-                        <exclude>**/DseChampformer*</exclude>
-                        <!-- Permanently excluded, not worth testing -->
-                        <exclude>**/ChampAPIPerformanceTest*</exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <!--  implementation is needed only for Maven 2  -->
-                                <rule implementation="org.jacoco.maven.RuleConfiguration">
-                                    <element>BUNDLE</element>
-                                    <limits>
-                                        <!--  implementation is needed only for Maven 2  -->
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>INSTRUCTION</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.15</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>BRANCH</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.12</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>COMPLEXITY</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.15</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>LINE</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.10</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>METHOD</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.17</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>CLASS</counter>
-                                            <value>MISSEDCOUNT</value>
-                                            <maximum>5</maximum>
-                                        </limit>
-                                    </limits>
-                                </rule>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

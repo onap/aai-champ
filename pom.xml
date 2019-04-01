@@ -37,6 +37,10 @@ limitations under the License.
     <properties>
         <onap.nexus.url>https://nexus.onap.org</onap.nexus.url>
         <event.client.version>1.4.0-SNAPSHOT</event.client.version>
+        <!-- Minimum code coverage percentage. Please update this figure as coverage increases to prevent any drops in
+         coverage caused by new changes. Note that this figure cannot be lower than the ONAP requirement of 0.55 -->
+        <jacoco.line.coverage.limit>0.57</jacoco.line.coverage.limit>
+        <jacoco.report.directory>${project.build.directory}/code-coverage</jacoco.report.directory>
     </properties>
 
     <modules>
@@ -54,6 +58,34 @@ limitations under the License.
                 <configuration>
                     <skip>true</skip>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${jacoco.report.directory}/jacoco-ut.exec</dataFile>
+                            <rules>
+                                <!--  implementation is needed only for Maven 2  -->
+                                <rule implementation="org.jacoco.maven.RuleConfiguration">
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${jacoco.line.coverage.limit}</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

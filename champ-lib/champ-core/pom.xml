@@ -32,6 +32,12 @@ limitations under the License.
 
     <groupId>org.onap.aai.champ.champ-lib</groupId>
     <artifactId>champ-core</artifactId>
+    
+    <properties>
+         <!-- Minimum code coverage percentage. Please update this figure as coverage increases to prevent any drops in
+         coverage caused by new changes. Note that this figure cannot be lower than the ONAP requirement of 0.55 -->
+        <jacoco.line.coverage.limit>0.81</jacoco.line.coverage.limit>
+    </properties>
 
     <dependencies>
         <!-- Event Bus Library. -->

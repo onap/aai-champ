@@ -34,6 +34,9 @@ limitations under the License.
 
     <properties>
         <tinkerpop.version>3.0.1-incubating</tinkerpop.version>
+         <!-- Minimum code coverage percentage. Please update this figure as coverage increases to prevent any drops in
+         coverage caused by new changes. Note that this figure cannot be lower than the ONAP requirement of 0.55 -->
+        <jacoco.line.coverage.limit>0.72</jacoco.line.coverage.limit>
     </properties>
 
     <dependencies>
@@ -122,73 +125,6 @@ limitations under the License.
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <!--  implementation is needed only for Maven 2  -->
-                                <rule implementation="org.jacoco.maven.RuleConfiguration">
-                                    <element>BUNDLE</element>
-                                    <limits>
-                                        <!--  implementation is needed only for Maven 2  -->
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>INSTRUCTION</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.15</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>BRANCH</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.14</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>COMPLEXITY</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.15</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>LINE</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.18</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>METHOD</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>.10</minimum>
-                                        </limit>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>CLASS</counter>
-                                            <value>MISSEDCOUNT</value>
-                                            <maximum>2</maximum>
-                                        </limit>
-                                    </limits>
-                                </rule>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
