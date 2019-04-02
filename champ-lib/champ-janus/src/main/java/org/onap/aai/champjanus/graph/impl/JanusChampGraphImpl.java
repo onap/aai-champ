@@ -50,6 +50,7 @@ import java.util.stream.StreamSupport;
 public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
   private static final Logger LOGGER = LoggerFactory.getLogger(JanusChampGraphImpl.class);
   private static final String JANUS_CASSANDRA_KEYSPACE = "storage.cassandra.keyspace";
+  private static final String JANUS_CQL_KEYSPACE = "storage.cql.keyspace";
   private static final String JANUS_HBASE_TABLE = "storage.hbase.table";
   private static final String JANUS_UNIQUE_SUFFIX = "graph.unique-instance-id-suffix";
   private static final ChampSchemaEnforcer SCHEMA_ENFORCER = new DefaultChampSchemaEnforcer();
@@ -87,8 +88,10 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
         "cassandrathrift".equals(storageBackend) ||
         "astyanax".equals(storageBackend) ||
         "embeddedcassandra".equals(storageBackend)) {
-    	
-    	janusGraphBuilder.set(JANUS_CASSANDRA_KEYSPACE, builder.graphName);
+
+      janusGraphBuilder.set(JANUS_CASSANDRA_KEYSPACE, builder.graphName);
+    } else if("cql".equals(storageBackend)){
+      janusGraphBuilder.set(JANUS_CQL_KEYSPACE, builder.graphName);
     } else if ("hbase".equals(storageBackend)) {
       janusGraphBuilder.set(JANUS_HBASE_TABLE, builder.graphName);
     } else if ("berkleyje".equals(storageBackend)) {
