@@ -25,13 +25,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.onap.aai.champcore.ChampAPI;
+import org.onap.aai.champcore.ChampCoreMsgs;
 import org.onap.aai.champcore.ChampGraph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
+
 
 public class ChampAPIImpl implements ChampAPI {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ChampAPIImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getInstance().getLogger(ChampAPIImpl.class);
 
 	private final AtomicBoolean shutdown;
 	private final String type;
@@ -67,13 +69,16 @@ public class ChampAPIImpl implements ChampAPI {
 	public void shutdown() {
 		if (shutdown.compareAndSet(false, true)) {
 			for (Entry<String, ChampGraph> graphEntry : graphs.entrySet()) {
-				LOGGER.info("Shutting down graph {}", graphEntry.getKey());
+				LOGGER.info(ChampCoreMsgs.CHAMPCORE_CHAMP_API_IMPL_INFO, 
+				    String.format("Shutting down graph %s", graphEntry.getKey()));
 				
 				try {
 					graphEntry.getValue().shutdown();
-					LOGGER.info("Graph {} shutdown successfully", graphEntry.getKey());
+					LOGGER.info(ChampCoreMsgs.CHAMPCORE_CHAMP_API_IMPL_INFO,
+					    String.format("Graph %s shutdown successfully", graphEntry.getKey()));
 				} catch (Throwable t) {
-					LOGGER.warn("Caught exception while shutting down graph " + graphEntry.getKey(), t);
+					LOGGER.warn(ChampCoreMsgs.CHAMPCORE_CHAMP_API_IMPL_WARN,
+					    String.format("Caught exception while shutting down graph %s: %s", graphEntry.getKey(), t.getMessage()));
 				}
 			}
 		}

@@ -20,10 +20,32 @@
  */
 package org.onap.aai.champjanus.graph.impl;
 
+import java.security.SecureRandom;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.janusgraph.core.*;
+import org.janusgraph.core.Cardinality;
+import org.janusgraph.core.EdgeLabel;
+import org.janusgraph.core.JanusGraph;
+import org.janusgraph.core.JanusGraphEdge;
+import org.janusgraph.core.JanusGraphFactory;
+import org.janusgraph.core.JanusGraphVertex;
+import org.janusgraph.core.PropertyKey;
+import org.janusgraph.core.SchemaViolationException;
 import org.janusgraph.core.schema.JanusGraphIndex;
 import org.janusgraph.core.schema.JanusGraphManagement;
 import org.janusgraph.core.schema.JanusGraphManagement.IndexBuilder;
@@ -34,21 +56,23 @@ import org.onap.aai.champcore.ChampCapabilities;
 import org.onap.aai.champcore.exceptions.ChampIndexNotExistsException;
 import org.onap.aai.champcore.exceptions.ChampSchemaViolationException;
 import org.onap.aai.champcore.graph.impl.AbstractTinkerpopChampGraph;
-import org.onap.aai.champcore.model.*;
+import org.onap.aai.champcore.model.ChampCardinality;
+import org.onap.aai.champcore.model.ChampField;
+import org.onap.aai.champcore.model.ChampObject;
+import org.onap.aai.champcore.model.ChampObjectConstraint;
+import org.onap.aai.champcore.model.ChampObjectIndex;
+import org.onap.aai.champcore.model.ChampPropertyConstraint;
+import org.onap.aai.champcore.model.ChampRelationship;
+import org.onap.aai.champcore.model.ChampRelationshipConstraint;
+import org.onap.aai.champcore.model.ChampRelationshipIndex;
+import org.onap.aai.champcore.model.ChampSchema;
 import org.onap.aai.champcore.schema.ChampSchemaEnforcer;
 import org.onap.aai.champcore.schema.DefaultChampSchemaEnforcer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.security.SecureRandom;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
 
 public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
-  private static final Logger LOGGER = LoggerFactory.getLogger(JanusChampGraphImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getInstance().getLogger(JanusChampGraphImpl.class);
   private static final String JANUS_CASSANDRA_KEYSPACE = "storage.cassandra.keyspace";
   private static final String JANUS_CQL_KEYSPACE = "storage.cql.keyspace";
   private static final String JANUS_HBASE_TABLE = "storage.hbase.table";
@@ -106,11 +130,13 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
     }
     catch (Exception ex) {
       // Swallow exception.  Cassandra may not be reachable.  Will retry next time we need to use the graph.
-      LOGGER.error("Error opening graph: " + ex.getMessage());
+      LOGGER.error(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_ERROR,
+          "Error opening graph: " + ex.getMessage());
       return;
     }
     
-    LOGGER.info("Instantiated data access layer for Janus graph data store with backend: " + storageBackend);
+    LOGGER.info(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_INFO,
+        "Instantiated data access layer for Janus graph data store with backend: " + storageBackend);
   }
 
   public static class Builder {
@@ -178,11 +204,13 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
 
     if (createIndexMgmt.getGraphIndex(index.getName()) != null) {
       createIndexMgmt.rollback();
-      LOGGER.info("Index " + index.getName() + " already exists");
+      LOGGER.info(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_INFO,
+          "Index " + index.getName() + " already exists");
       return; //Ignore, index already exists
     }
 
-    LOGGER.info("Create index " + index.getName());
+    LOGGER.info(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_INFO,
+        "Create index " + index.getName());
     IndexBuilder ib = createIndexMgmt.buildIndex(index.getName(), Vertex.class);
     for (ChampField field : index.getFields()) {
       PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(field.getName());
@@ -296,7 +324,8 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
       return; //Ignore, index already exists
     }
     
-    LOGGER.info("Create edge index " + index.getName());
+    LOGGER.info(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_INFO,
+        "Create edge index " + index.getName());
     createIndexMgmt.buildIndex(index.getName(), Edge.class).addKey(pk).buildCompositeIndex();
 
     createIndexMgmt.commit();
@@ -410,11 +439,13 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
           .timeout(REGISTER_OBJECT_INDEX_TIMEOUT_SECS, ChronoUnit.SECONDS)
           .call()
           .getSucceeded()) {
-        LOGGER.warn("Object index was created, but timed out while waiting for it to be registered");
+        LOGGER.warn(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_WARN,
+            "Object index was created, but timed out while waiting for it to be registered");
         return;
       }
     } catch (InterruptedException e) {
-      LOGGER.warn("Interrupted while waiting for object index creation status");
+      LOGGER.warn(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_WARN,
+          "Interrupted while waiting for object index creation status");
       Thread.currentThread().interrupt();
       return;
     }
@@ -426,11 +457,13 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
       updateIndexMgmt.updateIndex(updateIndexMgmt.getGraphIndex(indexName), SchemaAction.REINDEX).get();
       updateIndexMgmt.commit();
     } catch (InterruptedException e) {
-      LOGGER.warn("Interrupted while reindexing for object index");
+      LOGGER.warn(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_WARN,
+          "Interrupted while reindexing for object index");
       Thread.currentThread().interrupt();
       return;
     } catch (ExecutionException e) {
-      LOGGER.warn("Exception occurred during reindexing procedure for creating object index " + indexName, e);
+      LOGGER.warn(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_WARN,
+          "Exception occurred during reindexing procedure for creating object index " + indexName + ". " + e.getMessage());
     }
 
     try {
@@ -439,7 +472,8 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
           .timeout(2, ChronoUnit.MINUTES)
           .call();
     } catch (InterruptedException e) {
-      LOGGER.warn("Interrupted while waiting for index to transition to ENABLED state");
+      LOGGER.warn(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_WARN,
+          "Interrupted while waiting for index to transition to ENABLED state");
       Thread.currentThread().interrupt();
       return;
     }
@@ -552,11 +586,13 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
       PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(KEY_PROPERTY_NAME);
       
       if (!vertexIndexExists) {
-        LOGGER.info("Create Index " + KEY_PROPERTY_NAME);
+        LOGGER.info(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_INFO,
+            "Create Index " + KEY_PROPERTY_NAME);
         createIndexMgmt.buildIndex(KEY_PROPERTY_NAME, Vertex.class).addKey(pk).buildCompositeIndex();
       }
       if (!edgeIndexExists) {
-        LOGGER.info("Create Index " + EDGE_IX_NAME);
+        LOGGER.info(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_INFO,
+            "Create Index " + EDGE_IX_NAME);
         createIndexMgmt.buildIndex(EDGE_IX_NAME, Edge.class).addKey(pk).buildCompositeIndex();
       }
       createIndexMgmt.commit();
@@ -570,13 +606,15 @@ public final class JanusChampGraphImpl extends AbstractTinkerpopChampGraph {
     }
     else {
       createIndexMgmt.rollback();
-      LOGGER.info("Index " + KEY_PROPERTY_NAME + " and " + EDGE_IX_NAME + " already exist");
+      LOGGER.info(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_INFO,
+          "Index " + KEY_PROPERTY_NAME + " and " + EDGE_IX_NAME + " already exist");
     }
     
     
     
     if (!nodeTypeIndexExists) {
-      LOGGER.info("Create Index " + NODE_TYPE_PROPERTY_NAME);
+      LOGGER.info(ChampJanusMsgs.JANUS_CHAMP_GRAPH_IMPL_INFO,
+          "Create Index " + NODE_TYPE_PROPERTY_NAME);
       createIndexMgmt = graph.openManagement();
       PropertyKey pk = createIndexMgmt.getOrCreatePropertyKey(NODE_TYPE_PROPERTY_NAME);
       createIndexMgmt.buildIndex(NODE_TYPE_PROPERTY_NAME, Vertex.class).addKey(pk).buildCompositeIndex();

@@ -90,4 +90,22 @@ public class ImportTest {
 
 		api.shutdown();
 	}
+	
+	 @Test
+	  public void testUndefinedEdgeSourceAndTarget() throws ChampTransactionException, AssertionError {
+
+	    final GraphMLImporterExporter importer = new GraphMLImporterExporter();
+	    final ChampAPI api = ChampAPI.Factory.newInstance("IN_MEMORY");
+
+	    importer.importData(api, getClass().getClassLoader().getResourceAsStream("import-test2.graphml"));
+
+	    final ChampGraph graph = api.getGraph(GRAPH_NAME);
+
+	    graph.queryObjects(Collections.emptyMap(), Optional.empty()).forEach(object -> {
+	      final Optional<String> nameOpt = object.getProperty("name");
+	      assertTrue(!nameOpt.isPresent());
+	    });
+
+	    api.shutdown();
+	  }
 }

@@ -23,6 +23,8 @@ package org.onap.aai.champcore.event.envelope;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.onap.aai.champcore.event.ChampEvent;
 import org.onap.aai.champcore.model.ChampObject;
@@ -32,6 +34,7 @@ import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -100,5 +103,45 @@ public class ChampEventEnvelopeTest {
                         new Customization("header.timestamp", (o1, o2) -> true),
                         new Customization("body.timestamp", (o1, o2) -> true),
                         new Customization("body.transaction-id", (o1, o2) -> true)));
+    }
+    
+    @Test
+    public void testChampEventHeader() {
+      String link = "link1";
+      String requestId = "request-id1";
+      String entityType = "entity-type1";
+      String topEntityType = "top-entity-type1";
+      
+      ChampEventHeader header1 = new ChampEventHeader.Builder(ChampEventHeader.EventType.UPDATE_NOTIFICATION)
+        .entityLink(link)
+        .requestId(requestId)
+        .validationEntityType(entityType)
+        .validationTopEntityType(topEntityType)
+        .build();
+      
+      Assert.assertEquals(link, header1.getEntityLink());
+      Assert.assertEquals(requestId, header1.getRequestId());
+      Assert.assertEquals(entityType, header1.getValidationEntityType());
+      Assert.assertEquals(topEntityType, header1.getValidationTopEntityType());
+
+      ChampEventHeader header2 = new ChampEventHeader.Builder(ChampEventHeader.EventType.UPDATE_RESULT)
+          .entityLink("link2")
+          .requestId("request-id2")
+          .validationEntityType("entity-type2")
+          .validationTopEntityType("top-entity-type2")
+          .build();
+      
+      Assert.assertNotEquals(header1, header2);
+
+      
+      header2.setEntityLink(link);
+      header2.setRequestId(requestId);
+      header2.setValidationEntityType(entityType);
+      header2.setValidationTopEntityType(topEntityType);
+      header2.setEventType(header1.getEventType());
+      header2.setTimestamp(header1.getTimestamp());
+
+      Assert.assertEquals(header1, header2);
+      
     }
 }
