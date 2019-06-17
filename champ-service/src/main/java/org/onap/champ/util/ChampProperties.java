@@ -5,6 +5,8 @@
  * Copyright © 2017-2018 AT&T Intellectual Property. All rights reserved.
  * Copyright © 2017-2018 Amdocs
  * ===================================================================
+ * Modifications Copyright (C) 2019 IBM.
+ * ===================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,8 +27,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
+import org.onap.champ.service.logging.ChampMsgs;
 
 public class ChampProperties {
+	
+	private static Logger logger = LoggerFactory.getInstance().getLogger(ChampProperties.class.getName());
 
     private static Properties properties;
 
@@ -37,7 +44,7 @@ public class ChampProperties {
         ) {
             properties.load(fileInputStream);
         } catch (IOException e) {
-            e.printStackTrace();
+        	logger.error(ChampMsgs.CHAMP_DATA_SERVICE_ERROR, "Error while loading properties ", e.getMessage());
             Runtime.getRuntime().halt(1);
         }
     }
@@ -57,7 +64,7 @@ public class ChampProperties {
         ) {
             properties.store(fileOut, "Added property: " + key);
         } catch (Exception e) {
-            e.printStackTrace();
+        	logger.error(ChampMsgs.CHAMP_DATA_SERVICE_ERROR, "Error while setting properties ", e.getMessage());
         }
     }
 

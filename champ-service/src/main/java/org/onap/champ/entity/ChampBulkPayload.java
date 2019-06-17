@@ -5,6 +5,8 @@
  * Copyright © 2017-2018 AT&T Intellectual Property. All rights reserved.
  * Copyright © 2017-2018 Amdocs
  * ================================================================================
+ * Modifications Copyright (C) 2019 IBM.
+ * ================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,10 +32,10 @@ import java.util.List;
 
 public class ChampBulkPayload {
 
-  public static String ADD_OP = "add";
-  public static String UPDATE_OP = "modify";
-  public static String DELETE_OP = "delete";
-  public static String PATCH_OP = "patch";
+  public static final String ADD_OP = "add";
+  public static final String UPDATE_OP = "modify";
+  public static final String DELETE_OP = "delete";
+  public static final String PATCH_OP = "patch";
 
   private List<ChampBulkOp> edgeDeleteOps = new ArrayList<ChampBulkOp>();
   private List<ChampBulkOp> vertexDeleteOps = new ArrayList<ChampBulkOp>();
