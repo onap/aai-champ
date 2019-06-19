@@ -2,8 +2,9 @@
  * ============LICENSE_START==========================================
  * org.onap.aai
  * ===================================================================
- * Copyright © 2017-2018 AT&T Intellectual Property. All rights reserved.
- * Copyright © 2017-2018 Amdocs
+ * Copyright Â© 2017-2018 AT&T Intellectual Property. All rights reserved.
+ * Copyright Â© 2017-2018 Amdocs
+ * Modifications Copyright (C) 2019 IBM
  * ===================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +65,8 @@ public final class InMemoryChampGraphImpl extends AbstractTinkerpopChampGraph {
 	    super(builder.graphConfiguration);
 		this.graph = TinkerGraph.open();
 	
-		this.objectIndices = new ConcurrentHashMap<String, ChampObjectIndex> ();
-		this.relationshipIndices = new ConcurrentHashMap<String, ChampRelationshipIndex> ();
+		this.objectIndices = new ConcurrentHashMap<>();
+		this.relationshipIndices = new ConcurrentHashMap<>();
 
 		this.schemaEnforcer = builder.schemaEnforcer;
 	}
