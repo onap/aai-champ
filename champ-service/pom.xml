@@ -344,23 +344,6 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.11</version>
-                <configuration>
-                    <verbose>true</verbose>
-                    <serverId>docker-hub</serverId>
-                    <imageName>${docker.push.registry}/onap/${docker.name}</imageName>
-                    <dockerDirectory>${docker.location}</dockerDirectory>
-                    <imageTags>
-                        <imageTag>latest</imageTag>
-                    </imageTags>
-                    <forceTags>true</forceTags>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -371,4 +354,40 @@ limitations under the License.
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.4.11</version>
+                        <configuration>
+                            <verbose>true</verbose>
+                            <serverId>docker-hub</serverId>
+                            <imageName>${docker.push.registry}/onap/${docker.name}</imageName>
+                            <dockerDirectory>${docker.location}</dockerDirectory>
+                            <imageTags>
+                                <imageTag>latest</imageTag>
+                            </imageTags>
+                            <forceTags>true</forceTags>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals> 
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+
 </project>
