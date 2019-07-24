@@ -1,26 +1,15 @@
-FROM ubuntu:14.04
+FROM @aai.docker.namespace@/aai-common-@aai.base.image@:@aai.base.image.version@
 
 ARG MICRO_HOME=/opt/app/champ-service
 ARG BIN_HOME=$MICRO_HOME/bin
 ARG GRAPHLIB_HOME=$MICRO_HOME/graph-deps
 
-RUN apt-get update
-
-# Install and setup java8
-RUN apt-get update && apt-get install -y software-properties-common
-RUN sudo -E add-apt-repository ppa:openjdk-r/ppa && apt-get update && apt-get install -y openjdk-8-jdk
-ENV JAVA_HOME usr/lib/jvm/java-8-openjdk-amd64
-RUN export JAVA_HOME
-
 # Build up the deployment folder structure
 RUN mkdir -p $MICRO_HOME
-COPY champ-service.jar $MICRO_HOME/
-RUN mkdir -p $GRAPHLIB_HOME
-ADD graph-deps $GRAPHLIB_HOME
-RUN mkdir -p $BIN_HOME
-COPY *.sh $BIN_HOME
-RUN chmod 755 $BIN_HOME/*
-RUN ln -s /logs $MICRO_HOME/logs
+WORKDIR $MICRO_HOME
+COPY /maven/champ-service/ .
+RUN chmod 755 $BIN_HOME/* \
+    && ln -snf /logs $MICRO_HOME/logs
 
 EXPOSE 9522 9522
 

@@ -33,8 +33,6 @@ limitations under the License.
     <artifactId>champ-service</artifactId>
 
     <properties>
-        <docker.location>${basedir}/target</docker.location>
-        <docker.name>champ</docker.name>
         <onap.nexus.url>https://nexus.onap.org</onap.nexus.url>
         <common.logging.groupid>org.onap.aai.logging-service</common.logging.groupid>
         <common.logging.version>1.2.2</common.logging.version>
@@ -45,6 +43,18 @@ limitations under the License.
          <!-- Minimum code coverage percentage. Please update this figure as coverage increases to prevent any drops in
          coverage caused by new changes. Note that this figure cannot be lower than the ONAP requirement of 0.55 -->
         <jacoco.line.coverage.limit>0.16</jacoco.line.coverage.limit>
+
+        <!-- docker related properties -->
+        <docker.image.name>champ</docker.image.name>
+        <docker.fabric.version>0.28.0</docker.fabric.version>
+        <aai.docker.version>1.0.0</aai.docker.version>
+        <aai.build.directory>${project.build.directory}/${project.artifactId}-build/
+        </aai.build.directory>
+        <aai.docker.namespace>onap</aai.docker.namespace>
+        <aai.base.image>alpine</aai.base.image>
+        <aai.base.image.version>1.6.0</aai.base.image.version>
+        <!-- This will be used for the docker images as the default format of maven build has issues -->
+        <maven.build.timestamp.format>yyyyMMdd'T'HHmmss'Z'</maven.build.timestamp.format>
     </properties>
 
     <dependencyManagement>
@@ -123,15 +133,14 @@ limitations under the License.
             <version>3.22.0-GA</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jersey</artifactId>
             <exclusions>
-              <exclusion>
-               <groupId>org.springframework.boot</groupId>
-               <artifactId>spring-boot-starter-tomcat</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -153,9 +162,9 @@ limitations under the License.
             <version>2.6.2</version>
         </dependency>
 
-         <dependency>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
 
         <dependency>
@@ -279,44 +288,19 @@ limitations under the License.
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.7</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/descriptor.xml</descriptor>
+                    </descriptors>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>copy-docker-file</id>
+                        <id>make-assembly</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>single</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>target</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/src/main/docker</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>**/*</include>
-                                    </includes>
-                                </resource>
-                                <resource>
-                                    <directory>${basedir}/src/main/bin/</directory>
-                                </resource>
-                                <resource>
-                                    <directory>../champ-service-deps-janus/target/</directory>
-                                </resource>
-                                <resource>
-                                    <directory>../champ-service-deps-titan/target/</directory>
-                                </resource>
-                                <resource>
-                                    <directory>${basedir}</directory>
-                                    <includes>
-                                        <include>**/dynamic/**/*</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -361,26 +345,104 @@ limitations under the License.
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.spotify</groupId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <phase>pre-clean</phase>
+                                <id>parse-version</id>
+                                <goals>
+                                    <goal>parse-version</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.groovy.maven</groupId>
+                        <artifactId>gmaven-plugin</artifactId>
+                        <version>1.0</version>
+                        <executions>
+                            <execution>
+                                <phase>pre-clean</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <source>
+                                        def userAaiBaseImage = session.userProperties['aai.base.image']
+                                        def userAaiCommonVersion = session.userProperties['aai.base.image.version']
+                                        if (userAaiCommonVersion != null) {
+                                            project.properties['aai.base.image.version'] = userAaiCommonVersion
+                                        }
+                                        if (userAaiBaseImage != null) {
+                                            project.properties['aai.base.image'] = userAaiBaseImage
+                                        }
+                                        log.info 'Base image flavour: ' + project.properties['aai.base.image']
+                                        log.info 'Base image version: ' + project.properties['aai.base.image.version']
+                                    </source>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.4.11</version>
+                        <version>${docker.fabric.version}</version>
                         <configuration>
                             <verbose>true</verbose>
-                            <serverId>docker-hub</serverId>
-                            <imageName>${docker.push.registry}/onap/${docker.name}</imageName>
-                            <dockerDirectory>${docker.location}</dockerDirectory>
-                            <imageTags>
-                                <imageTag>latest</imageTag>
-                            </imageTags>
-                            <forceTags>true</forceTags>
+                            <apiVersion>1.23</apiVersion>
+                            <images>
+                                <image>
+                                    <name>${docker.push.registry}/${aai.docker.namespace}/${docker.image.name}:%l
+                                    </name>
+                                    <build>
+                                        <filter>@</filter>
+                                        <tags>
+                                            <tag>latest</tag>
+                                            <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-STAGING-latest</tag>
+                                            <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-STAGING-${maven.build.timestamp}</tag>
+                                        </tags>
+                                        <cleanup>try</cleanup>
+                                        <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
+                                        <assembly>
+                                            <inline>
+                                                <fileSets>
+                                                    <fileSet>
+                                                        <directory>${aai.build.directory}</directory>
+                                                        <outputDirectory>/${project.artifactId}</outputDirectory>
+                                                    </fileSet>
+                                                </fileSets>
+                                            </inline>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
                         </configuration>
                         <executions>
                             <execution>
-                                <id>default</id>
+                                <id>clean-images</id>
+                                <phase>pre-clean</phase>
+                                <goals>
+                                    <goal>remove</goal>
+                                </goals>
+                                <configuration>
+                                    <removeAll>true</removeAll>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-images</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>build</goal>
-                                </goals> 
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>push-images</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>push</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -388,6 +450,4 @@ limitations under the License.
             </build>
         </profile>
     </profiles>
-
-
 </project>
