@@ -26,7 +26,7 @@ limitations under the License.
     <parent>
         <groupId>org.onap.aai</groupId>
         <artifactId>champ</artifactId>
-        <version>1.5.1-SNAPSHOT</version>
+        <version>1.5.1</version>
     </parent>
 
     <groupId>org.onap.aai.champ</groupId>
