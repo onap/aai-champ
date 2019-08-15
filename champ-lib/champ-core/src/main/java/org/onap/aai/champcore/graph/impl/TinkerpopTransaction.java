@@ -21,11 +21,13 @@
 package org.onap.aai.champcore.graph.impl;
 
 import java.security.SecureRandom;
+
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.onap.aai.champcore.ChampCoreMsgs;
 import org.onap.aai.champcore.ChampTransaction;
 import org.onap.aai.champcore.exceptions.ChampTransactionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
 
 public class TinkerpopTransaction extends ChampTransaction {
 
@@ -35,7 +37,7 @@ public class TinkerpopTransaction extends ChampTransaction {
   protected Graph threadedTransaction;
 
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TinkerpopTransaction.class);
+  private static final Logger LOGGER = LoggerFactory.getInstance().getLogger(TinkerpopTransaction.class);
 
   protected TinkerpopTransaction() { }
 
@@ -55,7 +57,8 @@ public class TinkerpopTransaction extends ChampTransaction {
     // Request a threaded transaction object from the graph.
     this.threadedTransaction = aGraphInstance.tx().createThreadedTx();
 
-    LOGGER.info("Open transaction - id: " + id);
+    LOGGER.info(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_INFO,
+        "Open transaction - id: " + id);
   }
 
   @Override
@@ -82,7 +85,8 @@ public class TinkerpopTransaction extends ChampTransaction {
 
         // Do the commit.
         threadedTransaction.tx().commit();
-        LOGGER.info("Committed transaction - id: " + id);
+        LOGGER.info(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_INFO,
+            "Committed transaction - id: " + id);
         return;
 
       } catch (Throwable e) {
@@ -92,14 +96,16 @@ public class TinkerpopTransaction extends ChampTransaction {
         // Have we used up all of our retries?
         if (i == COMMIT_RETRY_COUNT - 1) {
 
-          LOGGER.error("Maxed out commit attempt retries, client must handle exception and retry", e);
+          LOGGER.error(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_ERROR,
+              "Maxed out commit attempt retries, client must handle exception and retry. " + e.getMessage());
           threadedTransaction.tx().rollback();
           throw new ChampTransactionException(e);
         }
 
         // Calculate how long we will wait before retrying...
         final long backoff = (long) Math.pow(2, i) * initialBackoff;
-        LOGGER.warn("Caught exception while retrying transaction commit, retrying in " + backoff + " ms");
+        LOGGER.warn(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_WARN,
+            "Caught exception while retrying transaction commit, retrying in " + backoff + " ms");
 
         // ...and sleep before trying the commit again.
         try {
@@ -107,7 +113,8 @@ public class TinkerpopTransaction extends ChampTransaction {
 
         } catch (InterruptedException ie) {
 
-          LOGGER.info("Interrupted while backing off on transaction commit");
+          LOGGER.info(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_INFO,
+              "Interrupted while backing off on transaction commit");
           Thread.currentThread().interrupt();
           return;
         }
@@ -128,7 +135,8 @@ public class TinkerpopTransaction extends ChampTransaction {
       try {
 
         threadedTransaction.tx().rollback();
-        LOGGER.info("Rolled back transaction - id: " + id);
+        LOGGER.info(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_INFO,
+            "Rolled back transaction - id: " + id);
         return;
 
       } catch (Throwable e) {
@@ -138,13 +146,15 @@ public class TinkerpopTransaction extends ChampTransaction {
         // Have we used up all of our retries?
         if (i == COMMIT_RETRY_COUNT - 1) {
 
-          LOGGER.error("Maxed out rollback attempt retries, client must handle exception and retry", e);
+          LOGGER.error(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_ERROR,
+              "Maxed out rollback attempt retries, client must handle exception and retry. " + e.getMessage());
           throw new ChampTransactionException(e);
         }
 
         // Calculate how long we will wait before retrying...
         final long backoff = (long) Math.pow(2, i) * initialBackoff;
-        LOGGER.warn("Caught exception while retrying transaction roll back, retrying in " + backoff + " ms");
+        LOGGER.warn(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_WARN,
+            "Caught exception while retrying transaction roll back, retrying in " + backoff + " ms");
 
         // ...and sleep before trying the commit again.
         try {
@@ -152,7 +162,8 @@ public class TinkerpopTransaction extends ChampTransaction {
 
         } catch (InterruptedException ie) {
 
-          LOGGER.info("Interrupted while backing off on transaction rollback");
+          LOGGER.info(ChampCoreMsgs.CHAMPCORE_TINKERPOP_TRANSACTION_INFO,
+              "Interrupted while backing off on transaction rollback");
           Thread.currentThread().interrupt();
           return;
         }

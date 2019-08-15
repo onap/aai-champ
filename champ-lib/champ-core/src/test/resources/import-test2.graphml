@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+	<key id="d0" for="node" attr.name="student" attr.type="boolean"/>
+	<key id="d1" for="node" attr.name="worth" attr.type="long"/>
+	<key id="d2" for="node" attr.name="age" attr.type="int"/>
+	<key id="d3" for="node" attr.name="height" attr.type="float"/>
+	<key id="d4" for="node" attr.name="weight" attr.type="double"/>
+	<key id="d5" for="node" attr.name="favoriteColor" attr.type="string">
+		<default>green</default>
+	</key>
+	<key id="d6" for="node" attr.name="name" attr.type="string"/>
+	<key id="d7" for="edge" attr.name="at" attr.type="long"/>
+	<key id="d8" for="node" attr.name="type" attr.type="string"/>
+	<key id="d9" for="edge" attr.name="type" attr.type="string"/>
+	<key id="d10" for="test" attr.name="name" attr.type="string">
+		<default>abc</default>
+	</key>	
+	<key id="d11" for="edge" attr.name="favoriteColor" attr.type="string">
+		<default>green</default>
+	</key>
+	<graph id="unit-test" edgedefault="directed">
+		<edge id="e0" source="n0" target="n2">
+			<data key="d7">12348234</data>
+			<data key="d9">Dog</data>
+		</edge>
+		<test id="test" />
+	</graph>
+</graphml>

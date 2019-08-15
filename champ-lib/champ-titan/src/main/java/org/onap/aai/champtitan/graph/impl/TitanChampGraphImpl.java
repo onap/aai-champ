@@ -22,8 +22,16 @@ package org.onap.aai.champtitan.graph.impl;
 
 import java.security.SecureRandom;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -47,8 +55,8 @@ import org.onap.aai.champcore.model.ChampRelationshipIndex;
 import org.onap.aai.champcore.model.ChampSchema;
 import org.onap.aai.champcore.schema.ChampSchemaEnforcer;
 import org.onap.aai.champcore.schema.DefaultChampSchemaEnforcer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
 
 import com.thinkaurelius.titan.core.Cardinality;
 import com.thinkaurelius.titan.core.EdgeLabel;
@@ -67,7 +75,7 @@ import com.thinkaurelius.titan.graphdb.database.management.ManagementSystem;
 
 public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TitanChampGraphImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getInstance().getLogger(TitanChampGraphImpl.class);
   private static final String TITAN_UNIQUE_SUFFIX = "graph.unique-instance-id-suffix";
   private static final String TITAN_CASSANDRA_KEYSPACE = "storage.cassandra.keyspace";
   private static final String TITAN_HBASE_TABLE = "storage.hbase.table";
@@ -115,7 +123,8 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
       throw new RuntimeException("Unknown storage.backend=" + storageBackend);
     }
     
-    LOGGER.info("Instantiated data access layer for Titan graph data store with backend: " + storageBackend);
+    LOGGER.info(ChampTitanMsgs.TITAN_CHAMP_GRAPH_IMPL_INFO,
+        "Instantiated data access layer for Titan graph data store with backend: " + storageBackend);
 
     this.graph = titanGraphBuilder.open();
   }
@@ -371,11 +380,13 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
           .timeout(REGISTER_OBJECT_INDEX_TIMEOUT_SECS, ChronoUnit.SECONDS)
           .call()
           .getSucceeded()) {
-        LOGGER.warn("Object index was created, but timed out while waiting for it to be registered");
+        LOGGER.warn(ChampTitanMsgs.TITAN_CHAMP_GRAPH_IMPL_WARN,
+            "Object index was created, but timed out while waiting for it to be registered");
         return;
       }
     } catch (InterruptedException e) {
-      LOGGER.warn("Interrupted while waiting for object index creation status");
+      LOGGER.warn(ChampTitanMsgs.TITAN_CHAMP_GRAPH_IMPL_WARN,
+          "Interrupted while waiting for object index creation status");
       Thread.currentThread().interrupt();
       return;
     }
@@ -387,11 +398,13 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
       updateIndexMgmt.updateIndex(updateIndexMgmt.getGraphIndex(indexName),SchemaAction.REINDEX).get();
       updateIndexMgmt.commit();
     } catch (InterruptedException e) {
-      LOGGER.warn("Interrupted while reindexing for object index");
+      LOGGER.warn(ChampTitanMsgs.TITAN_CHAMP_GRAPH_IMPL_WARN,
+          "Interrupted while reindexing for object index");
       Thread.currentThread().interrupt();
       return;
     } catch (ExecutionException e) {
-      LOGGER.warn("Exception occurred during reindexing procedure for creating object index " + indexName, e);
+      LOGGER.warn(ChampTitanMsgs.TITAN_CHAMP_GRAPH_IMPL_WARN,
+          "Exception occurred during reindexing procedure for creating object index " + indexName + ". " + e.getMessage());
     }
 
     try {
@@ -400,7 +413,8 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
           .timeout(10, ChronoUnit.MINUTES)
           .call();
     } catch (InterruptedException e) {
-      LOGGER.warn("Interrupted while waiting for index to transition to ENABLED state");
+      LOGGER.warn(ChampTitanMsgs.TITAN_CHAMP_GRAPH_IMPL_WARN, 
+          "Interrupted while waiting for index to transition to ENABLED state");
       Thread.currentThread().interrupt();
       return;
     }
@@ -489,6 +503,7 @@ public final class TitanChampGraphImpl extends AbstractTinkerpopChampGraph {
 
   @Override
   public void createDefaultIndexes() {
-    LOGGER.error("No default indexes being created");
+    LOGGER.error(ChampTitanMsgs.TITAN_CHAMP_GRAPH_IMPL_ERROR,
+        "No default indexes being created");
   }
 }

@@ -30,9 +30,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.onap.aai.champcore.ie.GraphMLImporterExporter;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
+
 public class Formatter {
 
-    private static final EELFLogger LOGGER = EELFManager.getInstance().getLogger(Formatter.class);
+    private static final Logger LOGGER = LoggerFactory.getInstance().getLogger(Formatter.class);
     protected JsonParser parser = new JsonParser();
     protected final FormatMapper format;
 
@@ -55,7 +59,8 @@ public class Formatter {
             try {
                 return Optional.of(this.format.formatObject(v));
             } catch (Exception var3) {
-                LOGGER.warn("Failed to format vertex, returning a partial list", var3);
+                LOGGER.warn(ChampCoreMsgs.CHAMPCORE_FORMATTER_WARN,
+                    "Failed to format vertex, returning a partial list " + var3);
                 return Optional.empty();
             }
         }).forEach((obj) -> {

@@ -56,6 +56,10 @@ public class LoggingUtil {
 
     MdcContext.initialize(transId, "ChampService", "", fromAppId, fromIp);
   }
+  
+  public static void initMdcContext() {
+    MdcContext.initialize("", "ChampService", "", "", "");
+  }
 
   /**
    * Logs the rest request.

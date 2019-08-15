@@ -22,8 +22,11 @@ package org.onap.champ;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
+
 import org.eclipse.jetty.util.security.Password;
+import org.onap.champ.service.logging.LoggingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -39,6 +42,8 @@ public class ChampApplication extends SpringBootServletInitializer {
     private Environment env;
 
     public static void main(String[] args) {
+        LoggingUtil.initMdcContext();
+        
         String keyStorePassword = System.getProperty("KEY_STORE_PASSWORD");
         if (keyStorePassword == null || keyStorePassword.isEmpty()) {
             throw new RuntimeException("Environment property KEY_STORE_PASSWORD not set");

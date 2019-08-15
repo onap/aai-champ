@@ -32,7 +32,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
 import org.onap.aai.champcore.ChampCapabilities;
+import org.onap.aai.champcore.ChampCoreMsgs;
 import org.onap.aai.champcore.ChampGraph;
 import org.onap.aai.champcore.ChampTransaction;
 import org.onap.aai.champcore.event.ChampEvent.ChampOperation;
@@ -52,9 +54,10 @@ import org.onap.aai.champcore.model.ChampRelationship;
 import org.onap.aai.champcore.model.ChampRelationshipConstraint;
 import org.onap.aai.champcore.model.ChampRelationshipIndex;
 import org.onap.aai.champcore.model.ChampSchema;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
 import org.onap.aai.event.api.EventPublisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 
 
@@ -89,7 +92,7 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
   /** Number of event publisher worker threads. */
   private Integer eventStreamPublisherPoolSize;
 
-  private static final Logger logger = LoggerFactory.getLogger(AbstractLoggingChampGraph.class);
+  private static final Logger logger = LoggerFactory.getInstance().getLogger(AbstractLoggingChampGraph.class);
 
 
   /**
@@ -105,8 +108,10 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
     // Make sure we were passed an event producer as one of our properties, otherwise
     // there is really nothing more we can do...
     if(producer == null) {
-      logger.error("No event stream producer was supplied.");
-      logger.error("NOTE!! Champ events will NOT be published to the event stream!");
+      logger.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_ERROR,
+          "No event stream producer was supplied.");
+      logger.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_ERROR,
+          "NOTE!! Champ events will NOT be published to the event stream!");
       return;
     }
 
@@ -128,8 +133,10 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
 
     } catch (Exception e) {
 
-      logger.error("Failed to instantiate event stream producer thread due to: '" + e.getMessage() + "'");
-      logger.error("NOTE!! Champ events may NOT be published to the event stream!");
+      logger.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_ERROR,
+          "Failed to instantiate event stream producer thread due to: '" + e.getMessage() + "'");
+      logger.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_ERROR,
+          "NOTE!! Champ events may NOT be published to the event stream!");
       return;
     }
   }
@@ -395,7 +402,8 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
       try {
         publisherPool.awaitTermination(1000, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
-        logger.warn("Termination interrupted");
+        logger.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_WARN, 
+            "Termination interrupted");
         Thread.currentThread().interrupt();
       }
     }
@@ -406,7 +414,8 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
         producer.close();
 
       } catch (Exception e) {
-        logger.error("Failed to stop event stream producer: " + e.getMessage());
+        logger.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_ERROR, 
+            "Failed to stop event stream producer: " + e.getMessage());
       }
     }
   }
@@ -421,7 +430,8 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
 
     } catch (ChampTransactionException e) {
 
-      logger.warn("Events associated with transaction " + transaction.id() + " not generated due to transaction commit failure.");
+      logger.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_WARN, 
+          "Events associated with transaction " + transaction.id() + " not generated due to transaction commit failure.");
 
       List<ChampEvent> enqueuedEvents = transaction.getEnqueuedEvents();
       for(ChampEvent event : enqueuedEvents) {
@@ -509,7 +519,8 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
       objectToDelete = retrieveObject(key, transaction);
 
     } catch (ChampUnmarshallingException e) {
-      logger.error("Unable to generate delete object log: " + e.getMessage());
+      logger.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_ERROR, 
+          "Unable to generate delete object log: " + e.getMessage());
     }
 
     executeDeleteObject(key, transaction);
@@ -731,14 +742,16 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
       return;
     }
 
-    logger.info("Log champcore event with transaction id: " + anEvent.getTransactionId() + " to event bus");
+    logger.info(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_INFO, 
+        "Log champcore event with transaction id: " + anEvent.getTransactionId() + " to event bus");
     if(logger.isDebugEnabled()) {
       logger.debug("Event payload: " + anEvent.toString());
     }
 
     // Try to submit the event to be published to the event bus.
     if(!eventQueue.offer(anEvent)) {
-      logger.error("Event could not be published to the event bus due to: Internal buffer capacity exceeded.");
+      logger.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_ERROR, 
+          "Event could not be published to the event bus due to: Internal buffer capacity exceeded.");
     }
   }
 
@@ -783,7 +796,8 @@ public abstract class AbstractLoggingChampGraph implements ChampGraph {
 
         } catch (Exception e) {
 
-          logger.error("Failed to publish event to event bus: " + e.getMessage());
+          logger.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_LOGGING_CHAMP_GRAPH_ERROR, 
+              "Failed to publish event to event bus: " + e.getMessage());
         }
       }
     }

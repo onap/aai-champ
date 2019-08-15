@@ -43,8 +43,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.onap.aai.champcore.ChampAPI;
+import org.onap.aai.champcore.ChampCoreMsgs;
 import org.onap.aai.champcore.ChampGraph;
-import org.onap.aai.champcore.ChampTransaction;
 import org.onap.aai.champcore.exceptions.ChampMarshallingException;
 import org.onap.aai.champcore.exceptions.ChampObjectNotExistsException;
 import org.onap.aai.champcore.exceptions.ChampRelationshipNotExistsException;
@@ -54,8 +54,8 @@ import org.onap.aai.champcore.exceptions.ChampUnmarshallingException;
 import org.onap.aai.champcore.model.ChampObject;
 import org.onap.aai.champcore.model.ChampObjectIndex;
 import org.onap.aai.champcore.model.ChampRelationship;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -65,7 +65,7 @@ import org.xml.sax.SAXException;
 
 public class GraphMLImporterExporter implements Importer, Exporter {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(GraphMLImporterExporter.class);
+	private static final Logger LOGGER = LoggerFactory.getInstance().getLogger(GraphMLImporterExporter.class);
 
 	private static class GraphMLKey {
 		private final String id;
@@ -141,7 +141,8 @@ public class GraphMLImporterExporter implements Importer, Exporter {
 				} else if (elementType.equals("edge")) {
 					edgePropertyDefinitions.put(id, propertyDefinitions);
 				} else {
-					LOGGER.warn("Unknown element type {}, skipping", elementType);
+					LOGGER.warn(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_WARN,
+					    String.format("Unknown element type %s, skipping", elementType));
 				}
 			}
 
@@ -170,7 +171,8 @@ public class GraphMLImporterExporter implements Importer, Exporter {
 					} else if (nodeOrEdge.getNodeName().equals("edge")) {
 						writeEdge(api.getGraph(graphName), nodeOrEdge, edgePropertyDefinitions, edgeDefaults);
 					} else {
-						LOGGER.warn("Unknown object {} found in graphML, skipping", nodeOrEdge.getNodeName());
+						LOGGER.warn(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_WARN,
+						    String.format("Unknown object %s found in graphML, skipping", nodeOrEdge.getNodeName()));
 					}
 				}
 			}
@@ -212,16 +214,20 @@ public class GraphMLImporterExporter implements Importer, Exporter {
 			} else targetObject = target.get();
 
 		} catch (ChampMarshallingException e) {
-			LOGGER.error("Failed to marshall object to backend type, skipping this edge", e);
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Failed to marshall object to backend type, skipping this edge. " + e.getMessage());
 			return;
 		} catch (ChampSchemaViolationException e) {
-			LOGGER.error("Source/target object violates schema constraint(s)", e);
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Source/target object violates schema constraint(s). " + e.getMessage());
 			return;
 		} catch (ChampObjectNotExistsException e) {
-			LOGGER.error("Failed to update existing source/target ChampObject", e);
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Failed to update existing source/target ChampObject. " + e.getMessage());
 			return;
 		} catch (ChampTransactionException e) {
-            LOGGER.error("Failed to commit or rollback transaction", e);
+            LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+                "Failed to commit or rollback transaction. " + e.getMessage());
 		}
 
 		final ChampRelationship.Builder champRelBuilder = new ChampRelationship.Builder(sourceObject, targetObject, "undefined");
@@ -267,17 +273,23 @@ public class GraphMLImporterExporter implements Importer, Exporter {
 		try {
 			graph.storeRelationship(relToStore, Optional.empty());
 		} catch (ChampMarshallingException e) {
-			LOGGER.warn("Failed to marshall ChampObject to backend type", e);
+			LOGGER.warn(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_WARN,
+			    "Failed to marshall ChampObject to backend type. " + e.getMessage());
 		} catch (ChampSchemaViolationException e) {
-			LOGGER.error("Failed to store object (schema violated): " + relToStore, e);
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Failed to store object (schema violated): " + relToStore + " " + e.getMessage());
 		} catch (ChampRelationshipNotExistsException e) {
-			LOGGER.error("Failed to update existing ChampRelationship", e);
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Failed to update existing ChampRelationship. " + e.getMessage());
 		} catch (ChampObjectNotExistsException e) {
-			LOGGER.error("Objects bound to relationship do not exist (should never happen)");
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Objects bound to relationship do not exist (should never happen)");
 		} catch (ChampUnmarshallingException e) {
-			LOGGER.error("Failed to unmarshall ChampObject to backend type");
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Failed to unmarshall ChampObject to backend type");
 		} catch (ChampTransactionException e) {
-		    LOGGER.error("Failed to commit or rollback transaction");
+		    LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+		        "Failed to commit or rollback transaction");
 		}
 		
 	}
@@ -338,13 +350,17 @@ public class GraphMLImporterExporter implements Importer, Exporter {
 		try {  
 		  graph.storeObject(objectToStore, Optional.empty());
 		} catch (ChampMarshallingException e) {
-			LOGGER.warn("Failed to marshall ChampObject to backend type", e);
+			LOGGER.warn(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_WARN,
+			    "Failed to marshall ChampObject to backend type. " + e.getMessage());
 		} catch (ChampSchemaViolationException e) {
-			LOGGER.error("Failed to store object (schema violated): " + objectToStore, e);
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Failed to store object (schema violated): " + objectToStore + " " + e.getMessage());
 		} catch (ChampObjectNotExistsException e) {
-			LOGGER.error("Failed to update existing ChampObject", e);
+			LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+			    "Failed to update existing ChampObject. " + e.getMessage());
 		} catch (ChampTransactionException e) {
-          LOGGER.error("Failed to commit or rollback transaction");
+          LOGGER.error(ChampCoreMsgs.CHAMPCORE_GRAPH_ML_IMPORTER_EXPORTER_ERROR,
+              "Failed to commit or rollback transaction");
         }
 	}
 

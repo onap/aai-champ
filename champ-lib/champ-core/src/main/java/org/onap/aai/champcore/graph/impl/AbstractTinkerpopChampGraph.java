@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -43,8 +42,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.onap.aai.champcore.ChampCoreMsgs;
 import org.onap.aai.champcore.ChampTransaction;
-import org.onap.aai.champcore.NoOpTinkerPopTransaction;
 import org.onap.aai.champcore.exceptions.ChampMarshallingException;
 import org.onap.aai.champcore.exceptions.ChampObjectNotExistsException;
 import org.onap.aai.champcore.exceptions.ChampRelationshipNotExistsException;
@@ -57,15 +56,15 @@ import org.onap.aai.champcore.model.ChampRelationship;
 import org.onap.aai.champcore.model.ChampSchema;
 import org.onap.aai.champcore.model.fluent.partition.CreateChampPartitionable;
 import org.onap.aai.champcore.transform.TinkerpopChampformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.onap.aai.cl.api.Logger;
+import org.onap.aai.cl.eelf.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingChampGraph {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTinkerpopChampGraph.class);
+	private static final Logger LOGGER = LoggerFactory.getInstance().getLogger(AbstractTinkerpopChampGraph.class);
 	private static final TinkerpopChampformer TINKERPOP_CHAMPFORMER = new TinkerpopChampformer();
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -282,7 +281,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
             return Stream.empty();
           }
         } catch (ChampUnmarshallingException e) {
-          LOGGER.warn("Failed to unmarshall object", e);
+          LOGGER.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_WARN, 
+              "Failed to unmarshall object. " + e.getMessage());
           return Stream.empty();
         }
       }
@@ -313,7 +313,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
                 next = getChampformer().unmarshallObject(query.next());
                 return true;
               } catch (ChampUnmarshallingException e) {
-                LOGGER.warn("Failed to unmarshall tinkerpop vertex during query, returning partial results", e);
+                LOGGER.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_WARN, 
+                    "Failed to unmarshall tinkerpop vertex during query, returning partial results" + e.getMessage());
               }					
             }
 
@@ -324,7 +325,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
                 tx.commit(); //Danger ahead if this iterator is not completely consumed
                              //then the transaction cache will hold stale values
               } catch (ChampTransactionException e) {
-                LOGGER.warn("Failed transaction commit due to: " + e.getMessage());
+                LOGGER.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_WARN, 
+                    "Failed transaction commit due to: " + e.getMessage());
               } 
                            
             }
@@ -433,7 +435,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
 	          next = getChampformer().unmarshallRelationship(edges.next());
 	          return true;
 	        } catch (ChampUnmarshallingException e) {
-	          LOGGER.warn("Failed to unmarshall tinkerpop edge during query, returning partial results", e);
+	          LOGGER.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_WARN, 
+	              "Failed to unmarshall tinkerpop edge during query, returning partial results" + e.getMessage());
 	        }					
 	      }
 
@@ -445,7 +448,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
                            //consumed, then the transaction cache will be stale
             
           } catch (ChampTransactionException e) {
-            LOGGER.warn("Failed transaction commit due to: " + e.getMessage());
+            LOGGER.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_WARN, 
+                "Failed transaction commit due to: " + e.getMessage());
           } 
 	                     
 	      }        
@@ -698,7 +702,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
 	      }
 	    } catch (ChampUnmarshallingException e) {
 	      
-	      LOGGER.warn("Failed to unmarshall relationship", e);
+	      LOGGER.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_WARN, 
+	          "Failed to unmarshall relationship" + e.getMessage());
 	      return Stream.empty();
 	    }
 	  }
@@ -728,7 +733,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
 	          next = getChampformer().unmarshallRelationship(query.next());
 	          return true;
 	        } catch (ChampUnmarshallingException e) {
-	          LOGGER.warn("Failed to unmarshall tinkerpop vertex during query, returning partial results", e);
+	          LOGGER.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_WARN,
+	              "Failed to unmarshall tinkerpop vertex during query, returning partial results" + e.getMessage());
 	        }					
 	      }
 
@@ -740,7 +746,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
                           //consumed, then the transaction cache will be stale
             
           } catch (ChampTransactionException e) {
-            LOGGER.warn("Failed transaction commit due to " + e.getMessage());
+            LOGGER.warn(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_WARN,
+                "Failed transaction commit due to " + e.getMessage());
           } 
 	                     
 	      }
@@ -996,7 +1003,8 @@ public abstract class AbstractTinkerpopChampGraph extends AbstractValidatingCham
 			try {
 				getGraph().close();
 			} catch (Throwable t) {
-				LOGGER.error("Exception while shutting down graph", t);
+				LOGGER.error(ChampCoreMsgs.CHAMPCORE_ABSTRACT_TINKERPOP_CHAMP_GRAPH_ERROR,
+				    "Exception while shutting down graph" + t.getMessage());
 			}
 		} else {
 			throw new IllegalStateException("Cannot call shutdown() after shutdown() was already initiated");
