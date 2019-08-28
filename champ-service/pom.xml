@@ -357,37 +357,115 @@ limitations under the License.
       </build>
 
       <profiles>
-	<profile>
-	  <id>docker</id>
-	  <build>
-	    <plugins>
-	      <plugin>
-		<groupId>com.spotify</groupId>
-		<artifactId>docker-maven-plugin</artifactId>
-		<version>0.4.11</version>
-		<configuration>
-		  <verbose>true</verbose>
-		  <serverId>docker-hub</serverId>
-		  <imageName>${docker.push.registry}/onap/${docker.name}</imageName>
-		  <dockerDirectory>${docker.location}</dockerDirectory>
-		  <imageTags>
-		    <imageTag>latest</imageTag>
-		  </imageTags>
-		  <forceTags>true</forceTags>
-		</configuration>
-		<executions>
-		  <execution>
-		    <id>default</id>
-		    <phase>package</phase>
-		    <goals>
-		      <goal>build</goal>
-		    </goals>
-		  </execution>
-		</executions>
-	      </plugin>
-	    </plugins>
-	  </build>
-	</profile>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <phase>pre-clean</phase>
+                                <id>parse-version</id>
+                                <goals>
+                                    <goal>parse-version</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.groovy.maven</groupId>
+                        <artifactId>gmaven-plugin</artifactId>
+                        <version>1.0</version>
+                        <executions>
+                            <execution>
+                                <phase>pre-clean</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <source>
+                                        def userAaiBaseImage = session.userProperties['aai.base.image'];
+                                        def userAaiCommonVersion = session.userProperties['aai.base.image.version'];
+                                        if (userAaiCommonVersion != null) {
+                                            project.properties['aai.base.image.version'] = userAaiCommonVersion;
+                                        }
+                                        if (userAaiBaseImage != null) {
+                                            project.properties['aai.base.image'] = userAaiBaseImage;
+                                        }
+                                        log.info 'Base image flavour: ' + project.properties['aai.base.image'];
+                                        log.info 'Base image version: ' + project.properties['aai.base.image.version'];
+                                    </source>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>${docker.fabric.version}</version>
+                        <configuration>
+                            <verbose>true</verbose>
+                            <apiVersion>1.23</apiVersion>
+                            <images>
+                                <image>
+                                    <name>${docker.push.registry}/${aai.docker.namespace}/${project.artifactId}:%l
+                                    </name>
+                                    <build>
+                                        <filter>@</filter>
+                                        <tags>
+                                            <tag>latest</tag>
+                                            <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-STAGING-latest</tag>
+                                            <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-STAGING-${maven.build.timestamp}</tag>
+                                        </tags>
+                                        <cleanup>try</cleanup>
+                                        <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
+                                        <assembly>
+                                            <inline>
+                                                <fileSets>
+                                                    <fileSet>
+                                                        <directory>${aai.build.directory}</directory>
+                                                        <outputDirectory>/${project.artifactId}</outputDirectory>
+                                                    </fileSet>
+                                                </fileSets>
+                                            </inline>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>clean-images</id>
+                                <phase>pre-clean</phase>
+                                <goals>
+                                    <goal>remove</goal>
+                                </goals>
+                                <configuration>
+                                    <removeAll>true</removeAll>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-images</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>push-images</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>push</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
       </profiles>
       
 </project>
